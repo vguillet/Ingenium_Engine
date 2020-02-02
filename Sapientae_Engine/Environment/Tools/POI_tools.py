@@ -22,7 +22,7 @@ __date__ = '31/01/2020'
 
 class POI_tools:
     @staticmethod
-    def gen_ef_dict(mine_count=1, market_count=1):
+    def gen_ef_dict(mine_count=0, market_count=0):
 
         ef_dict = {"Sources": {},
                    "Converters": {}}
