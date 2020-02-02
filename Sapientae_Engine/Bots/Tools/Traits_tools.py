@@ -18,7 +18,7 @@ __date__ = '31/01/2020'
 ################################################################################################################
 
 
-class traits_tools:
+class Traits_tools:
     @staticmethod
     def gen_traits_dict(bias=None):
         traits_dict = {}

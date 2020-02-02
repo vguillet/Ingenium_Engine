@@ -21,7 +21,7 @@ __date__ = '31/01/2020'
 class Inventory_tools:
     @staticmethod
     def gen_bot_inventory_dict(bias=None):
-        inventory_dict = {"Money": 0,
+        inventory_dict = {"Money": 100,
                           "Resources": {"Iron": 10,
                                         "Gold": 10
                                         }
@@ -30,21 +30,20 @@ class Inventory_tools:
         return inventory_dict
 
     @staticmethod
-    def gen_market_inventory_dict(bias=None):
-        inventory_dict = {"Money": 0,
-                          "Resources": {"Iron": 10,
-                                        "Gold": 10
-                                        }
-                          }
+    def gen_market_inventory_dict(traded_item_types, bias=None):
+        inventory_dict = {"Money": 100}
+
+        for item_type in traded_item_types:
+            inventory_dict[item_type] = {}
 
         return inventory_dict
 
     @staticmethod
     def clean_inventory(inventory_dict):
-        for items in inventory_dict:
-            if isinstance(inventory_dict[items], dict):
-                for resource in inventory_dict[items].keys():
-                    if inventory_dict[items][resource]["Quantity available"] == 0:
-                        del inventory_dict[items][resource]
+        for item_type in inventory_dict:
+            if isinstance(inventory_dict[item_type], dict):
+                for item in inventory_dict[item_type].keys():
+                    if inventory_dict[item_type][item] == 0:
+                        del inventory_dict[item_type][item]
 
         return inventory_dict

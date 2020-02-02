@@ -11,7 +11,7 @@ from faker import Faker
 
 # Own modules
 from Sapientae_Engine.Environment.Sources.Mine_gen import Mine
-# from Sapientae_Engine.Environment.Converters.Market_gen import Market
+from Sapientae_Engine.Environment.Converters.Market_gen import gen_market
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -31,11 +31,11 @@ class POI_tools:
         Faker.seed(4321)
 
         for mine in range(mine_count):
-            name = fake.name().split(" ")[1] + " Mine"
+            name = fake.name().split(" ")[0] + " Mine"
             ef_dict["Sources"][name] = Mine(name)
 
         for market in range(market_count):
-            name = fake.name().split(" ")[1] + " Market"
-            ef_dict["Converters"][name] = Mine(name)
+            name = fake.name().split(" ")[0] + " Market"
+            ef_dict["Converters"][name] = gen_market(name, ["Resources"])
 
         return ef_dict

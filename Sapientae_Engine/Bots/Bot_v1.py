@@ -9,9 +9,9 @@
 # Libs
 
 # Own modules
-from Sapientae_Engine.Bots.Bot_properties.Traits_tools import traits_tools
-from Sapientae_Engine.Bots.Bot_properties.Inventory_tools import inventory_tools
-from Sapientae_Engine.Bots.Bot_logic.Decision_tree import decision_tree
+from Sapientae_Engine.Bots.Tools.Traits_tools import Traits_tools
+from Sapientae_Engine.Tools.Inventory_tools import Inventory_tools
+from Sapientae_Engine.Tools.Interests_tools import Interests_tools
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -21,23 +21,33 @@ __date__ = '31/01/2020'
 
 
 class Bot_v1:
-    def __init__(self, job, traits_dict=None, inventory_dict=None):
+    def __init__(self,
+                 pos: tuple,
+                 traits: dict = None,
+                 inventory: dict = None,
+                 interests: dict = None):
 
         # --> Setup role of the bot in a simulation
-        self.job = job
+        self.pos = pos
 
         # --> Setting up bot traits
-        if traits_dict is not None:
-            self.traits_dict = traits_dict
+        if traits is not None:
+            self.traits = traits
         else:
-            self.traits_dict = traits_tools().gen_traits_dict()
+            self.traits = Traits_tools().gen_traits_dict()
 
-        # --> Setting up bot inventories
-        if inventory_dict is not None:
-            self.inventory_dict = inventory_dict
+        # --> Setting up bot inventory
+        if inventory is not None:
+            self.inventory = inventory
         else:
-            self.account_dict = inventory_tools().gen_inventory_dict()
-        self.inventory_dict = inventory_dict
+            self.inventory = Inventory_tools().gen_bot_inventory_dict()
 
+        # --> Setting up bot interest
+        if interests is not None:
+            self.interests = interests
+        else:
+            self.interests = Interests_tools().gen_bot_interests_dict()
+
+        # --> Setting up bot
     def gen_activity_decision(self):
         return

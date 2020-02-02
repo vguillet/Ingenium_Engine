@@ -20,15 +20,14 @@ __date__ = '31/01/2020'
 ################################################################################################################
 
 
-class POI:
-    def __init__(self, name, label, x, y, ef_dict=None):
+class gen_POI:
+    def __init__(self, name, label, pos: tuple, ef_dict=None):
         # --> Setup POI reference properties
         self.name = name
         self.label = label
 
         # --> Setup POI position
-        self.x = x
-        self.y = y
+        self.pos = pos
 
         # --> Setup POI content
         if ef_dict is None:
