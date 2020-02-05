@@ -9,9 +9,9 @@
 # Libs
 
 # Own modules
-from Sapientae_Engine.Bots.Tools.Traits_tools import Traits_tools
-from Sapientae_Engine.Tools.Inventory_tools import Inventory_tools
-from Sapientae_Engine.Tools.Interests_tools import Interests_tools
+from Ingenium_Engine.Bots.Tools.Traits_tools import Traits_tools
+from Ingenium_Engine.Tools.Inventory_tools import Inventory_tools
+from Ingenium_Engine.Tools.Interests_tools import Interests_tools
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -22,10 +22,14 @@ __date__ = '31/01/2020'
 
 class Bot_v1:
     def __init__(self,
+                 name,
                  pos: tuple,
                  traits: dict = None,
                  inventory: dict = None,
                  interests: dict = None):
+
+        # --> Setup reference properties
+        self.name = name
 
         # --> Setup role of the bot in a simulation
         self.pos = pos
@@ -48,6 +52,12 @@ class Bot_v1:
         else:
             self.interests = Interests_tools().gen_bot_interests_dict()
 
-        # --> Setting up bot
+    def __str__(self):
+        return self.name + " (Bot)"
+
+    def __repr__(self):
+        self.__repr__()
+
+    # --> Setting up bot
     def gen_activity_decision(self):
         return

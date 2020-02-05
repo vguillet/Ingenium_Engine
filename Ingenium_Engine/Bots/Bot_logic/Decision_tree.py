@@ -9,8 +9,8 @@
 # Libs
 
 # Own modules
-from Sapientae_Engine.Bots.Bot_properties.Traits_tools import traits_tools
-from Sapientae_Engine.Bots.Bot_properties.Inventory_tools import inventory_tools
+from Ingenium_Engine.Bots.Tools.Traits_tools import Traits_tools
+from Ingenium_Engine.Tools.Inventory_tools import Inventory_tools
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'

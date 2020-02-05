@@ -22,8 +22,8 @@ class Inventory_tools:
     @staticmethod
     def gen_bot_inventory_dict(bias=None):
         inventory_dict = {"Money": 100,
-                          "Resources": {"Iron": 10,
-                                        "Gold": 10
+                          "Resources": {"Iron": 0,
+                                        "Gold": 0
                                         }
                           }
 

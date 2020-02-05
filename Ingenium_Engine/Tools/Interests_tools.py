@@ -21,9 +21,9 @@ __date__ = '31/01/2020'
 class Interests_tools:
     @staticmethod
     def gen_bot_interests_dict(bias=None):
-        interests_dict = {"Resources": {"Iron": {"Expectation": 10,
-                                                 "Minimum": 5,
-                                                 "Maximum": 12},
+        interests_dict = {"Resources": {"Iron": {"Expectation": 30,
+                                                 "Minimum": 20,
+                                                 "Maximum": 40},
                                         "Gold": {"Expectation": 50,
                                                  "Minimum": 45,
                                                  "Maximum": 60},
@@ -37,9 +37,9 @@ class Interests_tools:
 
     @staticmethod
     def gen_market_interests_dict(item_types):
-        interests_dict = {"Resources": {"Iron": {"Expectation": 10,
-                                                 "Minimum": 5,
-                                                 "Maximum": 12},
+        interests_dict = {"Resources": {"Iron": {"Expectation": 30,
+                                                 "Minimum": 20,
+                                                 "Maximum": 40},
                                         "Gold": {"Expectation": 50,
                                                  "Minimum": 45,
                                                  "Maximum": 60},
@@ -52,21 +52,17 @@ class Interests_tools:
         return interests_dict
 
     @staticmethod
-    def increase_expectation(bot_expectation, bot_surplus,
-                             ef_expectation, ef_surplus):
-        # TODO: Dynamically adjusted percents
-        increase_percent = 0.2
-        new_bot_expectation = bot_expectation + increase_percent * bot_surplus
-        new_ef_expectation = ef_expectation + increase_percent * ef_surplus
-
-        return new_bot_expectation, new_ef_expectation
+    def increase_expectation(expectation, expectation_p_difference=None, increase_percent=0, setting=1):
+        # TODO: Add expectation settings
+        if setting == 1:
+            return expectation + 1
+        if setting == 2:
+            return expectation + increase_percent * expectation_p_difference
 
     @staticmethod
-    def decrease_expectation(bot_expectation, bot_shortfall,
-                             ef_expectation, ef_shortfall):
-        # TODO: Dynamically adjusted percents
-        decrease_percent = 0.3
-        new_bot_expectation = bot_expectation - decrease_percent * bot_shortfall
-        new_ef_expectation = ef_expectation - decrease_percent * ef_shortfall
+    def decrease_expectation(expectation, expectation_ap_difference, decrease_percent=0, setting=1):
+        if setting == 1:
+            return expectation - 1
+        if setting == 2:
+            return expectation - decrease_percent * expectation_ap_difference
 
-        return new_bot_expectation, new_ef_expectation
