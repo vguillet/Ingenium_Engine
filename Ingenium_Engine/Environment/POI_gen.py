@@ -39,12 +39,6 @@ class gen_POI:
         else:
             self.ef_dict = ef_dict
 
-    def __str__(self):
-        return self.name + " (POI)"
-
-    def __repr__(self):
-        return self.__str__()
-
     @property
     def POI_money(self):
         POI_money = 0
@@ -66,14 +60,23 @@ class gen_POI:
                    "Converters": {}}
 
         fake = Faker()
-        Faker.seed(4321)
 
         for mine in range(mine_count):
             name = fake.name().split(" ")[0] + " Mine"
-            ef_dict["Sources"][name] = Mine(name)
+            ef_dict["Sources"][name] = Mine(name, pos)
 
         for market in range(market_count):
             name = fake.name().split(" ")[0] + " Market"
             ef_dict["Converters"][name] = gen_market(name, pos, ["Resources"])
 
         return ef_dict
+
+    def __str__(self):
+        return self.name + " (POI) " \
+               + str(self.pos) + ",    "\
+               + " sources: " + str(len(self.ef_dict["Sources"])) \
+               + ", converters: " + str(len(self.ef_dict["Converters"])) \
+               + "\n"
+
+    def __repr__(self):
+        return self.__str__()

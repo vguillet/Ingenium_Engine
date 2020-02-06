@@ -1,0 +1,1 @@
+resources = ["Iron", "Gold"]

@@ -141,7 +141,7 @@ class gen_environment:
         pos_list = []
 
         # --> Adding POI to environment
-        for _ in range(number_of_POI):
+        for i in range(number_of_POI):
             # --> Generate POI name
             name = fake.first_name() + " City"
             while name in name_list:

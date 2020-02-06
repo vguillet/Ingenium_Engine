@@ -1,4 +1,3 @@
-
 ################################################################################################################
 """
 
@@ -14,6 +13,7 @@
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
 __date__ = '31/01/2020'
+
 
 ################################################################################################################
 
@@ -35,7 +35,7 @@ class Interests_tools:
         return interests_dict
 
     @staticmethod
-    def gen_market_interests_dict(item_types):
+    def gen_market_interests_dict(traded_item_types):
         # --> Setting up reference interest dictionary
         ref_interests_dict = {"Resources": {"Iron": {"Expectation": 30,
                                                      "Minimum": 20,
@@ -46,11 +46,11 @@ class Interests_tools:
                                             "Diamond": {"Expectation": 200,
                                                         "Minimum": 185,
                                                         "Maximum": 210}}
-                             }
+                              }
 
         # --> Setting up interest dictionary
         interests_dict = {}
-        for item_type in item_types:
+        for item_type in traded_item_types:
             interests_dict[item_type] = ref_interests_dict[item_type]
 
         return interests_dict
@@ -95,4 +95,3 @@ class Interests_tools:
             else:
                 expectation_dict["Expectation"] = expectation_dict["Minimum"]
                 return expectation_dict
-

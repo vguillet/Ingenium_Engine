@@ -13,6 +13,7 @@ from Ingenium_Engine.Environment.Converters.Converter_gen import Converter
 from Ingenium_Engine.Tools.Transaction_gen import gen_transaction
 from Ingenium_Engine.Tools.Inventory_tools import Inventory_tools
 from Ingenium_Engine.Tools.Interests_tools import Interests_tools
+from Ingenium_Engine.Tools.Characteristics_tools import Characteristics_tools
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -22,24 +23,20 @@ __date__ = '31/01/2020'
 
 
 class gen_market(Converter):
-    def __init__(self, name: "Converter name", pos: tuple, traded_item_types: list):
+    def __init__(self, name: "Converter name",
+                 pos: tuple,
+                 traded_item_types: list = "Resources",
+                 inventory: dict = None,
+                 interests: dict = None,
+                 characteristics: dict = None):
         # --> Initialising base class (building all ref properties)
         super().__init__(name, pos)
 
-        # --> Setup market inventory
-        self.inventory = Inventory_tools().gen_market_inventory_dict(traded_item_types)
-
-        # --> Setup market interests
-        self.interests = Interests_tools().gen_market_interests_dict(traded_item_types)
+        # --> Setup inventory/interests/characterisitcs dicts
+        self.gen_dicts(traded_item_types, inventory, interests, characteristics)
 
         # --> Initialising records
         self.transaction_records = []
-
-    def __str__(self):
-        return self.name + " (Market-type converter)"
-
-    def __repr__(self):
-        return self.__str__()
 
     def evaluate_transaction(self, date, bot: "Bot class instance", transaction_type, item_type, item, item_quantity):
         interests_tools = Interests_tools()
@@ -248,7 +245,7 @@ class gen_market(Converter):
 
         return
 
-    def supply_inventory(self, item_type, item, item_quantity):
+    def add_to_inventory(self, item_type, item, item_quantity):
         # --> Checking whether item type is in the Market's inventory
         if item_type in self.inventory.keys():
 
@@ -265,7 +262,7 @@ class gen_market(Converter):
             print(item_type + " not tradable in this market")
             return
 
-    def clear_inventory(self, item_type, item, item_quantity):
+    def remove_from_inventory(self, item_type, item, item_quantity):
         # --> Checking if item is in inventory
         if item in self.inventory[item_type].keys():
 
@@ -274,12 +271,41 @@ class gen_market(Converter):
                 self.inventory[item_type][item] -= item_quantity
 
             else:
-                print("item quantity in inventory lower than quantity to be removed")
+                self.inventory[item_type][item] = 0
                 return
 
         else:
             print("item not in inventory")
             return
+
+    def gen_dicts(self,
+                  traded_item_types: list,
+                  inventory: dict,
+                  interests: dict,
+                  characteristics: dict):
+        # --> Setting up inventory
+        if inventory is not None:
+            self.inventory = inventory
+        else:
+            self.inventory = Inventory_tools().gen_market_inventory_dict(traded_item_types)
+
+        # --> Setting up interest
+        if interests is not None:
+            self.interests = interests
+        else:
+            self.interests = Interests_tools().gen_market_interests_dict(traded_item_types)
+
+        # --> Setting up characteristics
+        if characteristics is not None:
+            self.characteristics = characteristics
+        else:
+            self.characteristics = Characteristics_tools().gen_market_characteristics_dict()
+
+    def __str__(self):
+        return self.name + " (Market-type converter)"
+
+    def __repr__(self):
+        return self.__str__()
 
 
 if __name__ == "__main__":
