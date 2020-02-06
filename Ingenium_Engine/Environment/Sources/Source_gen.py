@@ -19,9 +19,9 @@ __date__ = '31/01/2020'
 ################################################################################################################
 
 
-class Converter:
+class Source:
     def __init__(self, name, pos: tuple):
         # ----- Setup reference properties
-        self.type = "Converter"
+        self.type = "Source"
         self.name = name
         self.pos = pos

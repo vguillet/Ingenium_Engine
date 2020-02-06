@@ -6,15 +6,17 @@
 
 # Built-in/Generic Imports
 import random
+import sys
 
 # Libs
 import matplotlib.pyplot as plt
 import pandas as pd
+from faker import Faker
+import networkx as nx
 
 # Own modules
 from Ingenium_Engine.Environment.Environment_gen import gen_environment
 from Ingenium_Engine.Environment.POI_gen import gen_POI
-from Ingenium_Engine.Environment.Tools.POI_tools import POI_tools
 
 from Ingenium_Engine.Bots.Bot_v1 import Bot_v1
 
@@ -24,52 +26,58 @@ __date__ = '31/01/2020'
 
 ################################################################################################################
 
+# --> Seeding generators
+
 random.seed(345)
 
-training_range = 10
-
 # ----- Generating environment
-poi_tools = POI_tools()
-poi_1 = gen_POI("Paris", "City", pos=(0, 0), ef_dict=poi_tools.gen_ef_dict(pos=(0, 0), market_count=1))
-poi_2 = gen_POI("Amsterdam", "City", pos=(1, 1), ef_dict=poi_tools.gen_ef_dict(pos=(1, 1)))
-poi_3 = gen_POI("London", "City", pos=(-1, -1), ef_dict=poi_tools.gen_ef_dict(pos=(-1, -1)))
-poi_4 = gen_POI("Berlin", "City", pos=(-1, 1), ef_dict=poi_tools.gen_ef_dict(pos=(-1, 1)))
-poi_5 = gen_POI("Shefield", "City", pos=(1, -1), ef_dict=poi_tools.gen_ef_dict(pos=(1, -1)))
-
-POI_lst = [poi_1, poi_2, poi_3, poi_4, poi_5]
-
 env = gen_environment("Test 1")
-for poi in POI_lst:
-    env.add_POI(poi)
 
-env.add_POI_link(poi_1, poi_2)
-env.add_POI_link(poi_1, poi_3)
-env.add_POI_link(poi_1, poi_4)
-env.add_POI_link(poi_1, poi_5)
+env.gen_random_layout(number_of_POI=12)
 
-# env.plot_environment_graph()
+# env.add_POI(gen_POI("Paris", "City", (1, 1), mine_count=0, market_count=1))
+# env.add_POI(gen_POI("London", "City", (1, -1), mine_count=1, market_count=0))
+# env.add_POI(gen_POI("Rome", "City", (-1, -1), mine_count=0, market_count=1))
+# env.add_POI(gen_POI("Amsterdam", "City", (-1, 1), mine_count=1, market_count=0))
 
-# --> Creating trading bots
-billy = Bot_v1("Billy", env.POI_dict["Amsterdam"].pos)
-katy = Bot_v1("Katy", env.POI_dict["Amsterdam"].pos)
+env.add_all_POI_links()
 
-bots_traded = [billy, katy]
-# bots_traded = [billy]
+env.plot_environment_graph()
 
+
+# ----- Creating trading bots
+bots_traded = []
+
+fake = Faker()
+for i in range(10):
+    bots_traded.append(Bot_v1(fake.name(), env.POI_dict[random.choice(list(env.POI_dict.keys()))].pos))
 
 # ----- Creating timeline
-timeline = pd.DataFrame(index=pd.date_range(start='1/1/2018', end='2/1/2018'), columns=["Katy Expect",
-                                                                                        "Katy invent",
-                                                                                        "Billy Expect",
-                                                                                        "Billy invent",
-                                                                                        "Rosegold M. Price"])
+column_names = []
+# --> Create bot columns
+for bot in bots_traded:
+    column_names.append(bot.name + " Expect")
+    column_names.append(bot.name + " Invent")
+    bot.gen_activity_decision(env)
+
+# --> Create market columns
+for market in env.converters_dict.keys():
+    column_names.append(market)
+
+# --> Create timeline dataframe
+timeline = pd.DataFrame(index=pd.date_range(start='1/1/2018', end='2/1/2018'), columns=column_names)
+
+sys.exit()
 
 print("")
 for index, row in timeline.iterrows():
     print("--------------------- New day")
 
-    # --> Supply single market environment
-    env.converters_dict["Rosegold Market"].inventory["Resources"]["Iron"] = 1
+    # --> Supply markets environment
+    for market in env.converters_dict.keys():
+        env.converters_dict[market].inventory["Resources"]["Iron"] += 1
+
+    # --> Perform trade day
     bots = bots_traded
     bots_traded = []
 

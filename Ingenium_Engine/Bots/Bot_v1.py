@@ -28,11 +28,11 @@ class Bot_v1:
                  inventory: dict = None,
                  interests: dict = None):
 
-        # --> Setup reference properties
+        # ----- Setup reference properties
         self.name = name
 
-        # --> Setup role of the bot in a simulation
         self.pos = pos
+        self.velocity = None
 
         # --> Setting up bot traits
         if traits is not None:
@@ -59,5 +59,25 @@ class Bot_v1:
         self.__repr__()
 
     # --> Setting up bot
-    def gen_activity_decision(self):
+    def gen_activity_decision(self, environment: "Environment Object"):
+        # ----- List options
+        option_lst = []
+
+        # --> Checking whether bot is at a POI
+        current_POI = None
+        for POI in environment.POI_dict.keys():
+            if environment.POI_dict[POI].pos == self.pos:
+                current_POI = POI
+                break
+
+        # --> If at POI, listing available ef
+        if current_POI is not None:
+            for source in environment.sources_dict.keys():
+                if environment.sources_dict[source].pos == self.pos:
+                    option_lst.append(source)
+            for converter in environment.converters_dict.keys():
+                if environment.converters_dict[converter] == self.pos:
+                    option_lst.append(converter)
+
+        print(option_lst)
         return

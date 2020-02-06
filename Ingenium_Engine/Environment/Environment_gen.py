@@ -5,13 +5,17 @@
 """
 
 # Built-in/Generic Imports
+import random
+from itertools import combinations
 
 # Libs
+import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+from faker import Faker
 
 # Own modules
-
+from Ingenium_Engine.Environment.POI_gen import gen_POI
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -22,7 +26,7 @@ __date__ = '31/01/2020'
 
 class gen_environment:
     def __init__(self, name):
-        # --> Setup reference properties
+        # ----- Setup reference properties
         self.name = name
         self.POI_dict = {}
         self.graph = nx.Graph()
@@ -32,6 +36,9 @@ class gen_environment:
 
     def __repr__(self):
         return self.__str__()
+
+    def get_POI_links(self, POI: "POI name"):
+        return self.graph.edges(POI)
 
     @property
     def converters_dict(self):
@@ -59,8 +66,52 @@ class gen_environment:
         self.graph.remove_node(POI.name)
         return
 
-    def add_POI_link(self, POI_1: "POI Object", POI_2: "POI Object"):
-        self.graph.add_edge(POI_1.name, POI_2.name)
+    def add_POI_link(self, POI_1: "POI Name", POI_2: "POI Name"):
+        self.graph.add_edge(POI_1, POI_2)
+        return
+
+    def add_close_POI_links(self, nb_close_links):
+        existing_links = []
+
+        # --> Adding edges
+        for current_POI in self.POI_dict.keys():
+            distance = []
+            adjacent_POIs = []
+
+            for POI in self.POI_dict.keys():
+                if current_POI == POI:
+                    pass
+                else:
+                    adjacent_POIs.append(self.POI_dict[POI])
+                    pos_current = self.POI_dict[current_POI].pos
+                    pos = self.POI_dict[POI].pos
+
+                    # --> Compute distance between current POI and other
+                    distance.append(((pos_current[0] - pos[0]) ** 2 + (pos_current[1] - pos[1]) ** 2) ** (1 / 2))
+
+                # --> Sort POIs from closest to farthest from current POI
+                for j in range(len(distance)):
+                    for i in range(len(distance) - 1):
+                        if distance[i] > distance[i + 1]:
+                            distance[i], distance[i + 1] = distance[i + 1], distance[i]
+                            adjacent_POIs[i], adjacent_POIs[i + 1] = adjacent_POIs[i + 1], adjacent_POIs[i]
+
+            # --> Create edge between x closest POI
+            for k in range(nb_close_links):
+                link = [self.POI_dict[current_POI].name, adjacent_POIs[k].name]
+                link.sort()
+
+                if link in existing_links:
+                    pass
+                else:
+                    existing_links.append(link)
+                    self.add_POI_link(self.POI_dict[current_POI].name, adjacent_POIs[k].name)
+        return
+
+    def add_all_POI_links(self):
+        edges = combinations(self.POI_dict.keys(), 2)
+        for edge in edges:
+            self.add_POI_link(edge[0], edge[1])
         return
 
     def plot_environment_graph(self):
@@ -70,36 +121,57 @@ class gen_environment:
         plt.show()
         return
 
+    def gen_random_layout(self, number_of_POI=6, number_of_markets=3, number_of_mines=6):
+        # --> Seeding generators
+        Faker.seed(4323)
+        random.seed(4353)
+        np.random.seed(4457)
+
+        # --> Reset current environment content
+        self.POI_dict = {}
+        self.graph = nx.Graph()
+
+        # --> Initiate environment features counter
+        mine_count = number_of_mines
+        market_count = number_of_markets
+
+        fake = Faker()
+
+        name_list = []
+        pos_list = []
+
+        # --> Adding POI to environment
+        for _ in range(number_of_POI):
+            # --> Generate POI name
+            name = fake.first_name() + " City"
+            while name in name_list:
+                name = fake.first_name() + " City"
+            name_list.append(name)
+
+            # --> Generate random ed count
+            mines = random.randint(0, mine_count)
+            mine_count -= mines
+
+            markets = random.randint(0, market_count)
+            market_count -= markets
+
+            # --> Generate city position
+            pos = (int(np.random.normal(-10, 10, 1)[0]),
+                   int(np.random.normal(-10, 10, 1)[0]))
+            pos_list.append(pos)
+
+            self.add_POI(gen_POI(name, "City", pos,
+                                 mine_count=mines,
+                                 market_count=markets))
+
+        self.add_close_POI_links(3)
+
+        print("-- Random environment layout generated successfully --")
+
 
 if __name__ == "__main__":
     from Ingenium_Engine.Environment.POI_gen import gen_POI
-    from Ingenium_Engine.Environment.Tools.POI_tools import POI_tools
-
-    poi_tools = POI_tools()
-    poi_1 = gen_POI("Paris", "City", pos=(0, 0), ef_dict=poi_tools.gen_ef_dict(pos=(0, 0), market_count=1))
-    poi_2 = gen_POI("Amsterdam", "City", pos=(1, 1), ef_dict=poi_tools.gen_ef_dict(pos=(1, 1)))
-    poi_3 = gen_POI("London", "City", pos=(-1, -1), ef_dict=poi_tools.gen_ef_dict(pos=(-1, -1)))
-    poi_4 = gen_POI("Berlin", "City", pos=(-1, 1), ef_dict=poi_tools.gen_ef_dict(pos=(-1, 1)))
-    poi_5 = gen_POI("Shefield", "City", pos=(1, -1), ef_dict=poi_tools.gen_ef_dict(pos=(1, -1)))
-
-    poi_6 = gen_POI("Tokio", "City", pos=(2, -1), ef_dict=poi_tools.gen_ef_dict(pos=(2, -1)))
-
-    POI_lst = [poi_1, poi_2, poi_3, poi_4, poi_5, poi_6]
 
     env = gen_environment("Class test env")
 
-    print(env)
-
-    for poi in POI_lst:
-        env.add_POI(poi)
-
-    env.add_POI_link(poi_1, poi_2)
-    env.add_POI_link(poi_1, poi_3)
-    env.add_POI_link(poi_1, poi_4)
-    env.add_POI_link(poi_1, poi_5)
-
-    env.plot_environment_graph()
-
-    env.remove_POI(poi_6)
-
-    env.plot_environment_graph()
+    env.gen_random_layout(number_of_POI=10)

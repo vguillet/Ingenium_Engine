@@ -23,10 +23,16 @@ __date__ = '31/01/2020'
 
 class gen_market(Converter):
     def __init__(self, name: "Converter name", pos: tuple, traded_item_types: list):
-        # --> Initialising base class (building all ef properties)
-        super().__init__(name, pos, traded_item_types)
+        # --> Initialising base class (building all ref properties)
+        super().__init__(name, pos)
 
-        # --> Initialsing records
+        # --> Setup market inventory
+        self.inventory = Inventory_tools().gen_market_inventory_dict(traded_item_types)
+
+        # --> Setup market interests
+        self.interests = Interests_tools().gen_market_interests_dict(traded_item_types)
+
+        # --> Initialising records
         self.transaction_records = []
 
     def __str__(self):
@@ -71,12 +77,12 @@ class gen_market(Converter):
                             bot_surplus = bot.interests[item_type][item]["Maximum"] - price_per_item
 
                             # --> Increasing market expectations
-                            self.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(
-                                self.interests[item_type][item]["Expectation"], market_surplus)
+                            self.interests[item_type][item] = interests_tools.increase_expectation(
+                                self.interests[item_type][item], market_surplus)
 
                             # --> Decreasing bot expectations
-                            bot.interests[item_type][item]["Expectation"] = interests_tools.decrease_expectation(
-                                bot.interests[item_type][item]["Expectation"], bot_surplus)
+                            bot.interests[item_type][item] = interests_tools.decrease_expectation(
+                                bot.interests[item_type][item], bot_surplus)
 
                             print("Transaction succesfull, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " brought at " + str(price_per_item) + "$ per unit")
                             return
@@ -89,22 +95,22 @@ class gen_market(Converter):
                             bot_shortfall = bot.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"]
 
                             # --> Decreasing market expectations
-                            self.interests[item_type][item]["Expectation"] = interests_tools.decrease_expectation(
-                                self.interests[item_type][item]["Expectation"], market_shortfall)
+                            self.interests[item_type][item] = interests_tools.decrease_expectation(
+                                self.interests[item_type][item], market_shortfall)
 
                             # --> Increasing bot expectations
-                            bot.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(
-                                bot.interests[item_type][item]["Expectation"], bot_shortfall)
+                            bot.interests[item_type][item] = interests_tools.increase_expectation(
+                                bot.interests[item_type][item], bot_shortfall)
 
 
                     # --> If item count is not available
                     else:
                         # --> Increasing market expectations
-                        self.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(self.interests[item_type][item]["Expectation"],
+                        self.interests[item_type][item] = interests_tools.increase_expectation(self.interests[item_type][item],
                                                                                                              setting=1)
 
                         # --> Increasing bot expectations
-                        bot.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(bot.interests[item_type][item]["Expectation"],
+                        bot.interests[item_type][item] = interests_tools.increase_expectation(bot.interests[item_type][item],
                                                                                                              setting=1)
 
                         print("Requested " + item + " quantity not available (max available: " + str(self.inventory[item_type][item]) + " )")
@@ -113,11 +119,11 @@ class gen_market(Converter):
                 # --> If item is not available
                 else:
                     # --> Increasing market expectations
-                    self.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(self.interests[item_type][item]["Expectation"],
+                    self.interests[item_type][item] = interests_tools.increase_expectation(self.interests[item_type][item],
                                                                                                           setting=1)
 
                     # --> Increasing bot expectations
-                    bot.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(bot.interests[item_type][item]["Expectation"],
+                    bot.interests[item_type][item] = interests_tools.increase_expectation(bot.interests[item_type][item],
                                                                                                          setting=1)
 
                     print("Requested " + item + " not available")
@@ -155,12 +161,12 @@ class gen_market(Converter):
                             bot_surplus = price_per_item - bot.interests[item_type][item]["Minimum"]
 
                             # --> Decreasing market expectations
-                            self.interests[item_type][item]["Expectation"] = interests_tools.decrease_expectation(
-                                self.interests[item_type][item]["Expectation"], market_surplus)
+                            self.interests[item_type][item] = interests_tools.decrease_expectation(
+                                self.interests[item_type][item], market_surplus)
 
                             # --> Increasing bot expectations
-                            bot.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(
-                                bot.interests[item_type][item]["Expectation"], bot_surplus)
+                            bot.interests[item_type][item] = interests_tools.increase_expectation(
+                                bot.interests[item_type][item], bot_surplus)
 
                             print("Transaction succesfull, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " sold at " + str(price_per_item) + "$ per unit")
                             return
@@ -177,12 +183,12 @@ class gen_market(Converter):
                         bot_shortfall = self.interests[item_type][item]["Expectation"] - bot.interests[item_type][item]["Expectation"]
 
                         # --> Increasing market expectations
-                        self.interests[item_type][item]["Expectation"] = interests_tools.increase_expectation(
-                            self.interests[item_type][item]["Expectation"], market_surplus)
+                        self.interests[item_type][item] = interests_tools.increase_expectation(
+                            self.interests[item_type][item], market_surplus)
 
                         # --> Decreasing bot expectations
-                        bot.interests[item_type][item]["Expectation"] = interests_tools.decrease_expectation(
-                            bot.interests[item_type][item]["Expectation"], bot_surplus)
+                        bot.interests[item_type][item] = interests_tools.decrease_expectation(
+                            bot.interests[item_type][item], bot_surplus)
 
                 else:
                     print("Requested " + item + " quantity not available (max available: " + str(bot.inventory[item_type][item]) + " )")

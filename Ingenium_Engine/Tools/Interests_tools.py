@@ -29,40 +29,70 @@ class Interests_tools:
                                                  "Maximum": 60},
                                         "Diamond": {"Expectation": 200,
                                                     "Minimum": 185,
-                                                    "Maximum": 210},
-                                        }
+                                                    "Maximum": 210}}
                           }
 
         return interests_dict
 
     @staticmethod
     def gen_market_interests_dict(item_types):
-        interests_dict = {"Resources": {"Iron": {"Expectation": 30,
-                                                 "Minimum": 20,
-                                                 "Maximum": 40},
-                                        "Gold": {"Expectation": 50,
-                                                 "Minimum": 45,
-                                                 "Maximum": 60},
-                                        "Diamond": {"Expectation": 200,
-                                                    "Minimum": 185,
-                                                    "Maximum": 210},
-                                        }
-                          }
+        # --> Setting up reference interest dictionary
+        ref_interests_dict = {"Resources": {"Iron": {"Expectation": 30,
+                                                     "Minimum": 20,
+                                                     "Maximum": 40},
+                                            "Gold": {"Expectation": 50,
+                                                     "Minimum": 45,
+                                                     "Maximum": 60},
+                                            "Diamond": {"Expectation": 200,
+                                                        "Minimum": 185,
+                                                        "Maximum": 210}}
+                             }
+
+        # --> Setting up interest dictionary
+        interests_dict = {}
+        for item_type in item_types:
+            interests_dict[item_type] = ref_interests_dict[item_type]
 
         return interests_dict
 
     @staticmethod
-    def increase_expectation(expectation, expectation_p_difference=None, increase_percent=0, setting=1):
+    def increase_expectation(expectation_dict, surplus=None, increase_percent=0, setting=1):
         # TODO: Add expectation settings
+        # --> Fixed value expectation increase
         if setting == 1:
-            return expectation + 1
+            if expectation_dict["Maximum"] > expectation_dict["Expectation"] + 1:
+                expectation_dict["Expectation"] += 1
+                return expectation_dict
+            else:
+                expectation_dict["Expectation"] = expectation_dict["Maximum"]
+                return expectation_dict
+
+        # --> Surplus percent based expectation increase
         if setting == 2:
-            return expectation + increase_percent * expectation_p_difference
+            if expectation_dict["Maximum"] > expectation_dict["Expectation"] + increase_percent * surplus:
+                expectation_dict["Expectation"] += increase_percent * surplus
+                return expectation_dict
+            else:
+                expectation_dict["Expectation"] = expectation_dict["Maximum"]
+                return expectation_dict
 
     @staticmethod
-    def decrease_expectation(expectation, expectation_ap_difference, decrease_percent=0, setting=1):
+    def decrease_expectation(expectation_dict, expectation_difference, decrease_percent=0, setting=1):
+        # --> Fixed value expectation decrease
         if setting == 1:
-            return expectation - 1
+            if expectation_dict["Minimum"] > expectation_dict["Expectation"] - 1:
+                expectation_dict["Expectation"] -= 1
+                return expectation_dict
+            else:
+                expectation_dict["Expectation"] = expectation_dict["Minimum"]
+                return expectation_dict
+
+        # --> Expectation difference percent based expectation decrease
         if setting == 2:
-            return expectation - decrease_percent * expectation_ap_difference
+            if expectation_dict["Minimum"] > expectation_dict["Expectation"] - decrease_percent * expectation_difference:
+                expectation_dict["Expectation"] -= decrease_percent * expectation_difference
+                return expectation_dict
+            else:
+                expectation_dict["Expectation"] = expectation_dict["Minimum"]
+                return expectation_dict
 

@@ -9,6 +9,7 @@
 # Libs
 import networkx as nx
 import matplotlib.pyplot as plt
+from faker import Faker
 
 # Own modules
 
@@ -21,20 +22,28 @@ __date__ = '31/01/2020'
 
 
 class gen_POI:
-    def __init__(self, name, label, pos: tuple, ef_dict=None):
-        # --> Setup reference properties
+    def __init__(self, name, label, pos: tuple, mine_count=1, market_count=1, ef_dict=None):
+        # ----- Setup reference properties
         self.name = name
         self.label = label
 
         # --> Setup POI position
         self.pos = pos
 
-        # --> Setup POI content
+        # ----- Setup POI content
+        # --> Generate ef dictionary
         if ef_dict is None:
-            self.ef_dict = self.gen_ef_dict(pos, mine_count=0, market_count=1)
+            self.ef_dict = self.gen_ef_dict(pos, mine_count=mine_count, market_count=market_count)
 
+        # --> Use provided ef dictionary
         else:
             self.ef_dict = ef_dict
+
+    def __str__(self):
+        return self.name + " (POI)"
+
+    def __repr__(self):
+        return self.__str__()
 
     @property
     def POI_money(self):
@@ -56,17 +65,15 @@ class gen_POI:
         ef_dict = {"Sources": {},
                    "Converters": {}}
 
-        # fake = Faker()
-        # Faker.seed(4321)
+        fake = Faker()
+        Faker.seed(4321)
 
         for mine in range(mine_count):
-            # name = fake.name().split(" ")[0] + " Mine"
-            name = "Strongstone mine"
+            name = fake.name().split(" ")[0] + " Mine"
             ef_dict["Sources"][name] = Mine(name)
 
         for market in range(market_count):
-            # name = fake.name().split(" ")[0] + " Market"
-            name = "Rosegold Market"
+            name = fake.name().split(" ")[0] + " Market"
             ef_dict["Converters"][name] = gen_market(name, pos, ["Resources"])
 
         return ef_dict
