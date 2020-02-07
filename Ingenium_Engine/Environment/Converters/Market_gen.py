@@ -1,7 +1,7 @@
 
 ################################################################################################################
 """
-A converter sub-class specialising in exchanging items for money (both selling and buying)
+A converter sub-class specialising in exchanging items for money (agenth selling and buying)
 """
 
 # Built-in/Generic Imports
@@ -38,13 +38,13 @@ class gen_market(Converter):
         # --> Initialising records
         self.transaction_records = []
 
-    def evaluate_transaction(self, date, bot: "Bot class instance", transaction_type, item_type, item, item_quantity):
+    def evaluate_transaction(self, date, agent: "Agent class instance", transaction_type, item_type, item, item_quantity):
         interests_tools = Interests_tools()
 
         print("Transaction request recap:")
-        print("Bot trading:", bot.name)
+        print("Agent trading:", agent.name)
 
-        print("(Bot price) " + str(bot.interests[item_type][item]["Expectation"]) + " - " + str(self.interests[item_type][item]["Expectation"]) + " (Market price)")
+        print("(Agent price) " + str(agent.interests[item_type][item]["Expectation"]) + " - " + str(self.interests[item_type][item]["Expectation"]) + " (Market price)")
         print("(Quantity available) "  + str(self.inventory[item_type][item]) + " - " + str(item_quantity) + " (Quantity requested)\n")
 
         # ----- Performing buy transaction
@@ -59,27 +59,27 @@ class gen_market(Converter):
                     # --> Checking whether the requested item count is available
                     if self.inventory[item_type][item] >= item_quantity:
 
-                        # --> Check whether bot expectation/ market expectation interests match:
-                        if bot.interests[item_type][item]["Expectation"] >= self.interests[item_type][item]["Expectation"]:
+                        # --> Check whether agent expectation/ market expectation interests match:
+                        if agent.interests[item_type][item]["Expectation"] >= self.interests[item_type][item]["Expectation"]:
 
                             # TODO: Setup price_per_item based on traits
                             # --> Computing price per item based on interest (meet in the middle rn)
-                            price_per_item = (bot.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"])/2 + self.interests[item_type][item]["Expectation"]
+                            price_per_item = (agent.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"])/2 + self.interests[item_type][item]["Expectation"]
 
                             # --> Perform transaction
-                            self.perform_transaction(date, bot, transaction_type, item_type, item, item_quantity, price_per_item)
+                            self.perform_transaction(date, agent, transaction_type, item_type, item, item_quantity, price_per_item)
 
                             # --> Computing transaction surplus
                             market_surplus = price_per_item - self.interests[item_type][item]["Minimum"]
-                            bot_surplus = bot.interests[item_type][item]["Maximum"] - price_per_item
+                            agent_surplus = agent.interests[item_type][item]["Maximum"] - price_per_item
 
                             # --> Increasing market expectations
                             self.interests[item_type][item] = interests_tools.increase_expectation(
                                 self.interests[item_type][item], market_surplus)
 
-                            # --> Decreasing bot expectations
-                            bot.interests[item_type][item] = interests_tools.decrease_expectation(
-                                bot.interests[item_type][item], bot_surplus)
+                            # --> Decreasing agent expectations
+                            agent.interests[item_type][item] = interests_tools.decrease_expectation(
+                                agent.interests[item_type][item], agent_surplus)
 
                             print("Transaction succesfull, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " brought at " + str(price_per_item) + "$ per unit")
                             return
@@ -88,16 +88,16 @@ class gen_market(Converter):
                             print("Market expectation too high")
 
                             # --> Computing transaction shortfall
-                            market_shortfall = self.interests[item_type][item]["Expectation"] - bot.interests[item_type][item]["Expectation"]
-                            bot_shortfall = bot.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"]
+                            market_shortfall = self.interests[item_type][item]["Expectation"] - agent.interests[item_type][item]["Expectation"]
+                            agent_shortfall = agent.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"]
 
                             # --> Decreasing market expectations
                             self.interests[item_type][item] = interests_tools.decrease_expectation(
                                 self.interests[item_type][item], market_shortfall)
 
-                            # --> Increasing bot expectations
-                            bot.interests[item_type][item] = interests_tools.increase_expectation(
-                                bot.interests[item_type][item], bot_shortfall)
+                            # --> Increasing agent expectations
+                            agent.interests[item_type][item] = interests_tools.increase_expectation(
+                                agent.interests[item_type][item], agent_shortfall)
 
 
                     # --> If item count is not available
@@ -106,8 +106,8 @@ class gen_market(Converter):
                         self.interests[item_type][item] = interests_tools.increase_expectation(self.interests[item_type][item],
                                                                                                              setting=1)
 
-                        # --> Increasing bot expectations
-                        bot.interests[item_type][item] = interests_tools.increase_expectation(bot.interests[item_type][item],
+                        # --> Increasing agent expectations
+                        agent.interests[item_type][item] = interests_tools.increase_expectation(agent.interests[item_type][item],
                                                                                                              setting=1)
 
                         print("Requested " + item + " quantity not available (max available: " + str(self.inventory[item_type][item]) + " )")
@@ -119,8 +119,8 @@ class gen_market(Converter):
                     self.interests[item_type][item] = interests_tools.increase_expectation(self.interests[item_type][item],
                                                                                                           setting=1)
 
-                    # --> Increasing bot expectations
-                    bot.interests[item_type][item] = interests_tools.increase_expectation(bot.interests[item_type][item],
+                    # --> Increasing agent expectations
+                    agent.interests[item_type][item] = interests_tools.increase_expectation(agent.interests[item_type][item],
                                                                                                          setting=1)
 
                     print("Requested " + item + " not available")
@@ -138,32 +138,32 @@ class gen_market(Converter):
             if item_type in self.inventory.keys():
 
                 # --> Checking whether the requested item count is available
-                if bot.inventory[item_type][item] >= item_quantity:
+                if agent.inventory[item_type][item] >= item_quantity:
 
-                    # --> Check whether bot expectation/ market expectation interests match:
-                    if bot.interests[item_type][item]["Expectation"] <= self.interests[item_type][item]["Expectation"]:
+                    # --> Check whether agent expectation/ market expectation interests match:
+                    if agent.interests[item_type][item]["Expectation"] <= self.interests[item_type][item]["Expectation"]:
 
                         # TODO: Setup price_per_item based on traits
                         # --> Computing price per item based on interest (meet in the middle rn)
-                        price_per_item = (self.interests[item_type][item]["Expectation"] - bot.interests[item_type][item]["Expectation"]) / 2 + bot.interests[item_type][item]["Expectation"]
+                        price_per_item = (self.interests[item_type][item]["Expectation"] - agent.interests[item_type][item]["Expectation"]) / 2 + agent.interests[item_type][item]["Expectation"]
 
                         # --> Checking whether Market's Money quantity is available
                         if self.inventory["Money"] >= price_per_item * item_quantity:
 
                             # --> Perform transaction
-                            self.perform_transaction(date, bot, transaction_type, item_type, item, item_quantity, price_per_item)
+                            self.perform_transaction(date, agent, transaction_type, item_type, item, item_quantity, price_per_item)
 
                             # --> Computing transaction surplus
                             market_surplus = self.interests[item_type][item]["Maximum"] - price_per_item
-                            bot_surplus = price_per_item - bot.interests[item_type][item]["Minimum"]
+                            agent_surplus = price_per_item - agent.interests[item_type][item]["Minimum"]
 
                             # --> Decreasing market expectations
                             self.interests[item_type][item] = interests_tools.decrease_expectation(
                                 self.interests[item_type][item], market_surplus)
 
-                            # --> Increasing bot expectations
-                            bot.interests[item_type][item] = interests_tools.increase_expectation(
-                                bot.interests[item_type][item], bot_surplus)
+                            # --> Increasing agent expectations
+                            agent.interests[item_type][item] = interests_tools.increase_expectation(
+                                agent.interests[item_type][item], agent_surplus)
 
                             print("Transaction succesfull, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " sold at " + str(price_per_item) + "$ per unit")
                             return
@@ -176,19 +176,19 @@ class gen_market(Converter):
                         print("Market expectation too low")
 
                         # --> Computing transaction shortfall
-                        market_shortfall = bot.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"]
-                        bot_shortfall = self.interests[item_type][item]["Expectation"] - bot.interests[item_type][item]["Expectation"]
+                        market_shortfall = agent.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"]
+                        agent_shortfall = self.interests[item_type][item]["Expectation"] - agent.interests[item_type][item]["Expectation"]
 
                         # --> Increasing market expectations
                         self.interests[item_type][item] = interests_tools.increase_expectation(
                             self.interests[item_type][item], market_surplus)
 
-                        # --> Decreasing bot expectations
-                        bot.interests[item_type][item] = interests_tools.decrease_expectation(
-                            bot.interests[item_type][item], bot_surplus)
+                        # --> Decreasing agent expectations
+                        agent.interests[item_type][item] = interests_tools.decrease_expectation(
+                            agent.interests[item_type][item], agent_surplus)
 
                 else:
-                    print("Requested " + item + " quantity not available (max available: " + str(bot.inventory[item_type][item]) + " )")
+                    print("Requested " + item + " quantity not available (max available: " + str(agent.inventory[item_type][item]) + " )")
 
             else:
                 print(item_type + " not tradable in this market")
@@ -198,7 +198,7 @@ class gen_market(Converter):
             print("Invalid transaction type")
             return
 
-    def perform_transaction(self, date, bot, transaction_type, item_type, item, item_quantity, price_per_item):
+    def perform_transaction(self, date, agent, transaction_type, item_type, item, item_quantity, price_per_item):
         self.transaction_records.append(gen_transaction(date, transaction_type, item_type, item, item_quantity, price_per_item))
 
         # ----- Performing buy transaction
@@ -206,10 +206,10 @@ class gen_market(Converter):
 
             # ---> Client account update
             # --> Debiting client
-            bot.inventory["Money"] -= price_per_item * item_quantity
+            agent.inventory["Money"] -= price_per_item * item_quantity
 
             # --> Adding item to client's inventory
-            bot.inventory[item_type][item] += item_quantity
+            agent.inventory[item_type][item] += item_quantity
 
             # ---> Market account update
             # --> Crediting Market
@@ -225,10 +225,10 @@ class gen_market(Converter):
 
             # ---> Client account update
             # --> Crediting client
-            bot.inventory["Money"] += price_per_item * item_quantity
+            agent.inventory["Money"] += price_per_item * item_quantity
 
             # --> removing item to client's inventory
-            bot.inventory[item_type][item] -= item_quantity
+            agent.inventory[item_type][item] -= item_quantity
 
             # ---> Market account update
             # --> Debiting Market
@@ -241,7 +241,7 @@ class gen_market(Converter):
         inventory_tools = Inventory_tools()
 
         self.inventory = inventory_tools.clean_inventory(self.inventory)
-        bot.inventory = inventory_tools.clean_inventory(bot.inventory)
+        agent.inventory = inventory_tools.clean_inventory(agent.inventory)
 
         return
 

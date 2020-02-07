@@ -25,11 +25,28 @@ __date__ = '31/01/2020'
 
 
 class gen_environment:
-    def __init__(self, name):
+    def __init__(self, name, nb_POI=6, nb_markets=3, nb_mines=6, nb_links_per_POI=3, POI_dict: dict=None):
+        """
+        Environment class, used to generate Ingenium environments. A POI dict can be directly provided
+        when initialising a new environment, in which case the environment will be built accordingly
+        (disregarding other environment specification parameters)
+
+        :param name: Name of environment
+        :param nb_POI: nb of POI to be included in environment
+        :param nb_markets: nb of markets to be included in environment
+        :param nb_mines: nb of mines to be included in environment
+        :param POI_dict: (Optional) POI dictionary for a predefined environment layout/content
+        """
         # ----- Setup reference properties
         self.name = name
-        self.POI_dict = {}
-        self.graph = nx.Graph()
+        if POI_dict is not None:
+            self.POI_dict = POI_dict
+            self.graph = nx.Graph()
+
+            for POI in POI_dict.keys():
+                self.add_POI(POI_dict[POI])
+        else:
+            self.gen_random_layout(nb_POI, nb_markets, nb_mines, nb_links_per_POI)
 
     def __str__(self):
         return self.name + " (Environment)"
@@ -121,7 +138,7 @@ class gen_environment:
         plt.show()
         return
 
-    def gen_random_layout(self, number_of_POI=6, number_of_markets=3, number_of_mines=6):
+    def gen_random_layout(self, nb_POI=6, nb_markets=3, nb_mines=6, nb_links_per_POI=3):
         # --> Seeding generators
         Faker.seed(4323)
         random.seed(4353)
@@ -132,8 +149,8 @@ class gen_environment:
         self.graph = nx.Graph()
 
         # --> Initiate environment features counter
-        mine_count = number_of_mines
-        market_count = number_of_markets
+        mine_count = nb_mines
+        market_count = nb_markets
 
         fake = Faker()
 
@@ -141,7 +158,7 @@ class gen_environment:
         pos_list = []
 
         # --> Adding POI to environment
-        for i in range(number_of_POI):
+        for i in range(nb_POI):
             # --> Generate POI name
             name = fake.first_name() + " City"
             while name in name_list:
@@ -164,7 +181,7 @@ class gen_environment:
                                  mine_count=mines,
                                  market_count=markets))
 
-        self.add_close_POI_links(3)
+        self.add_close_POI_links(nb_links_per_POI)
 
         print("-- Random environment layout generated successfully --")
 
@@ -173,5 +190,3 @@ if __name__ == "__main__":
     from Ingenium_Engine.Environment.POI_gen import gen_POI
 
     env = gen_environment("Class test env")
-
-    env.gen_random_layout(number_of_POI=10)

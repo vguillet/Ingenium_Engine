@@ -18,7 +18,7 @@ import networkx as nx
 from Ingenium_Engine.Environment.Environment_gen import gen_environment
 from Ingenium_Engine.Environment.POI_gen import gen_POI
 
-from Ingenium_Engine.Bots.Bot_gen import gen_Bot
+from Ingenium_Engine.Agents.Agent_gen import gen_Agent
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -27,13 +27,12 @@ __date__ = '31/01/2020'
 ################################################################################################################
 
 # --> Seeding generators
-
 random.seed(345)
 
 # ----- Generating environment
 env = gen_environment("Test 1")
 
-env.gen_random_layout(number_of_POI=12, number_of_mines=8, number_of_markets=3)
+env.gen_random_layout(number_POI=12, number_mines=8, number_markets=3)
 
 # env.add_POI(gen_POI("Paris", "City", (1, 1), mine_count=0, market_count=1))
 # env.add_POI(gen_POI("London", "City", (1, -1), mine_count=1, market_count=0))
@@ -41,23 +40,22 @@ env.gen_random_layout(number_of_POI=12, number_of_mines=8, number_of_markets=3)
 # env.add_POI(gen_POI("Amsterdam", "City", (-1, 1), mine_count=1, market_count=0))
 
 # env.add_all_POI_links()
-
 # env.plot_environment_graph()
 
-# ----- Creating trading bots
-bots_traded = []
+# ----- Creating trading agents
+agents_traded = []
 
 fake = Faker()
-for i in range(10):
-    bots_traded.append(gen_Bot(fake.name(), env.POI_dict[random.choice(list(env.POI_dict.keys()))].pos))
+for i in range(1):
+    agents_traded.append(gen_Agent(fake.name(), env.POI_dict[random.choice(list(env.POI_dict.keys()))].pos))
 
 # ----- Creating timeline
 column_names = []
-# --> Create bot columns
-for bot in bots_traded:
-    column_names.append(bot.name + " Expect")
-    column_names.append(bot.name + " Invent")
-    bot.gen_activity_decision(env)
+# --> Create agent columns
+for agent in agents_traded:
+    column_names.append(agent.name + " Expect")
+    column_names.append(agent.name + " Invent")
+    agent.gen_activity_decision(env)
 
 # --> Create market columns
 for market in env.converters_dict.keys():
@@ -68,6 +66,9 @@ timeline = pd.DataFrame(index=pd.date_range(start='1/1/2018', end='2/1/2018'), c
 
 sys.exit()
 
+# --> Initiating QRL
+
+
 print("")
 for index, row in timeline.iterrows():
     print("--------------------- New day")
@@ -77,19 +78,19 @@ for index, row in timeline.iterrows():
         env.converters_dict[market].add_to_inventory("Resources", "Iron", 1)
 
     # --> Perform trade day
-    bots = bots_traded
-    bots_traded = []
+    agents = agents_traded
+    agents_traded = []
 
-    while len(bots) > 0:
-        bot = random.choice(bots)
-        env.converters_dict["Rosegold Market"].evaluate_transaction(index.strftime('%d/%m/%Y'), bot, "buy", "Resources", "Iron", 1)
+    while len(agents) > 0:
+        agent = random.choice(agents)
+        env.converters_dict["Rosegold Market"].evaluate_transaction(index.strftime('%d/%m/%Y'), agent, "buy", "Resources", "Iron", 1)
 
-        bots_traded.append(bot)
-        bots.remove(bot)
+        agents_traded.append(agent)
+        agents.remove(agent)
         print("")
 
-        row[bot.name + " Expect"] = bot.interests["Resources"]["Iron"]["Expectation"]
-        row[bot.name + " invent"] = bot.inventory["Resources"]["Iron"]
+        row[agent.name + " Expect"] = agent.interests["Resources"]["Iron"]["Expectation"]
+        row[agent.name + " invent"] = agent.inventory["Resources"]["Iron"]
 
     row["Rosegold M. Price"] = env.converters_dict["Rosegold Market"].interests["Resources"]["Iron"]["Expectation"]
 

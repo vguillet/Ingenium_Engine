@@ -20,7 +20,7 @@ __date__ = '31/01/2020'
 
 class Interests_tools:
     @staticmethod
-    def gen_bot_interests_dict(bias=None):
+    def gen_agent_interests_dict(bias=None):
         interests_dict = {"Resources": {"Iron": {"Expectation": 30,
                                                  "Minimum": 20,
                                                  "Maximum": 40},

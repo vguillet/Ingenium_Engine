@@ -21,7 +21,7 @@ __date__ = '31/01/2020'
 
 class Inventory_tools:
     @staticmethod
-    def gen_bot_inventory_dict(bias=None):
+    def gen_agent_inventory_dict(bias=None):
         inventory_dict = {"Money": 100,
                           "Resources": {"Iron": 0,
                                         "Gold": 0

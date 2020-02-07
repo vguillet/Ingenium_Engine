@@ -1,7 +1,7 @@
 
 ################################################################################################################
 """
-A converter sub-class specialising in exchanging items for money (both selling and buying)
+A converter sub-class specialising in exchanging items for money (agent selling and buying)
 """
 
 # Built-in/Generic Imports

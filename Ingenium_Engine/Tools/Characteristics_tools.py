@@ -20,7 +20,7 @@ __date__ = '31/01/2020'
 
 class Characteristics_tools:
     @staticmethod
-    def gen_bot_characteristics_dict():
+    def gen_agent_characteristics_dict():
         characteristics_dict = {"Age": 0,
                                 "Health": 0,
                                 "Attack": 0,

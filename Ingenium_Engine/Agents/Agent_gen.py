@@ -9,7 +9,7 @@
 # Libs
 
 # Own modules
-from Ingenium_Engine.Bots.Tools.Traits_tools import Traits_tools
+from Ingenium_Engine.Agents.Tools.Traits_tools import Traits_tools
 from Ingenium_Engine.Tools.Inventory_tools import Inventory_tools
 from Ingenium_Engine.Tools.Interests_tools import Interests_tools
 from Ingenium_Engine.Tools.Characteristics_tools import Characteristics_tools
@@ -21,7 +21,7 @@ __date__ = '31/01/2020'
 ################################################################################################################
 
 
-class gen_Bot:
+class gen_Agent:
     def __init__(self,
                  name: "Bot name",
                  pos: tuple,
@@ -31,19 +31,23 @@ class gen_Bot:
                  characteristics: dict = None):
         # ----- Setup reference properties
         self.name = name
-
         self.pos = pos
-        self.velocity = None
 
         # --> Setup traits/inventory/interests/characteristics dicts
         self.gen_dicts(traits, inventory, interests, characteristics)
 
-    # --> Setting up bot
+    def step(self):
+        new_state = None
+        reward = None
+        done = False
+        return new_state, reward, done
+
+    # --> Setting up agent
     def gen_activity_decision(self, environment: "Environment Object"):
         # ----- List options
         option_lst = []
 
-        # --> Checking whether bot is at a POI
+        # --> Checking whether agent is at a POI
         current_POI = None
         for POI in environment.POI_dict.keys():
             if environment.POI_dict[POI].pos == self.pos:
@@ -80,19 +84,19 @@ class gen_Bot:
         if inventory is not None:
             self.inventory = inventory
         else:
-            self.inventory = Inventory_tools().gen_bot_inventory_dict()
+            self.inventory = Inventory_tools().gen_agent_inventory_dict()
 
         # --> Setting up interest
         if interests is not None:
             self.interests = interests
         else:
-            self.interests = Interests_tools().gen_bot_interests_dict()
+            self.interests = Interests_tools().gen_agent_interests_dict()
 
         # --> Setting up characteristics
         if characteristics is not None:
             self.characteristics = characteristics
         else:
-            self.characteristics = Characteristics_tools().gen_bot_characteristics_dict()
+            self.characteristics = Characteristics_tools().gen_agent_characteristics_dict()
 
     def __str__(self):
         return self.name + " (Bot)"
