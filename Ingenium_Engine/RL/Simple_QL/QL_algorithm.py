@@ -85,12 +85,11 @@ class QL_optimiser:
             self.agents.append(gen_Agent(agent_name, agent_starting_position))
 
         for i, market in enumerate(self.starting_env.converters_dict.keys()):
-            print(self.starting_env.converters_dict[market].interests)
             self.starting_env.converters_dict[market].evaluate_transaction("",
                                                                            self.agents[-1],
                                                                            "buy",
                                                                            "Items",
-                                                                           "S Tool",
+                                                                           "L Health",
                                                                            1)
 
 

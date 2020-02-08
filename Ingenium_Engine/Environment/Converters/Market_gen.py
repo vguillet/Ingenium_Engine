@@ -67,6 +67,13 @@ class gen_market(Converter):
                             # --> Computing price per item based on interest (meet in the middle rn)
                             price_per_item = (agent.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"])/2 + self.interests[item_type][item]["Expectation"]
 
+                            # --> Checking whether bot money matches requested quantity
+                            if agent.inventory["Money"] < price_per_item * item_quantity:
+                                item_quantity = int(agent.inventory["Money"] / price_per_item)
+                                if item_quantity == 0:
+                                    print("Agent money too low for item")
+                                    return
+
                             # --> Perform transaction
                             self.perform_transaction(date, agent, transaction_type, item_type, item, item_quantity, price_per_item)
 
@@ -84,7 +91,7 @@ class gen_market(Converter):
 
                             print("Transaction succesfull, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " brought at " + str(price_per_item) + "$ per unit")
                             return
-
+                            
                         else:
                             print("Market expectation too high")
 
