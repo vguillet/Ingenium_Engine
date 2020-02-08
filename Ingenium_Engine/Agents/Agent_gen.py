@@ -36,14 +36,14 @@ class gen_Agent:
         # --> Setup traits/inventory/interests/characteristics dicts
         self.gen_dicts(traits, inventory, interests, characteristics)
 
-    def step(self):
+    def step(self, environment: "Environment Object"):
         new_state = None
         reward = None
         done = False
         return new_state, reward, done
 
     # --> Setting up agent
-    def gen_activity_decision(self, environment: "Environment Object"):
+    def gen_action_lst(self, environment: "Environment Object"):
         # ----- List options
         option_lst = []
 
@@ -67,7 +67,7 @@ class gen_Agent:
         for link in environment.graph.edges(current_POI):
             option_lst.append(link[1])
         print(option_lst)
-        return
+        return option_lst
 
     def gen_dicts(self,
                   traits: dict,

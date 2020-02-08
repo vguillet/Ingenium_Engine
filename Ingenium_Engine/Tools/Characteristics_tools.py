@@ -20,12 +20,30 @@ __date__ = '31/01/2020'
 
 class Characteristics_tools:
     @staticmethod
+    def increase_characteristic(characteristics_dict, characteristic: str, amount: int):
+        if characteristics_dict[characteristic] + amount > 100:
+            characteristics_dict[characteristic] = 100
+        else:
+            characteristics_dict[characteristic] += amount
+
+        return characteristics_dict
+
+    @staticmethod
+    def decrease_characteristic(characteristics_dict, characteristic: str, amount: int):
+        if characteristics_dict[characteristic] - amount < 1:
+            characteristics_dict[characteristic] = 1
+        else:
+            characteristics_dict[characteristic] -= amount
+
+        return characteristics_dict
+
+    @staticmethod
     def gen_agent_characteristics_dict():
         characteristics_dict = {"Age": 0,
-                                "Health": 0,
-                                "Attack": 0,
+                                "Health": 100,
+                                "Weapon": 0,
                                 "Armor": 0,
-                                "Mining": 0,
+                                "Tool": 0,
                                 }
 
         return characteristics_dict
@@ -38,13 +56,13 @@ class Characteristics_tools:
 
         for resource in inventory["Resources"].keys():
             if resource == "Iron":
-                characteristics_dict["RMD"][resource] = 85
+                characteristics_dict["RMD"][resource] = 10
 
             elif resource == "Gold":
-                characteristics_dict["RMD"][resource] = 50
+                characteristics_dict["RMD"][resource] = 60
 
             elif resource == "Diamond":
-                characteristics_dict["RMD"][resource] = 25
+                characteristics_dict["RMD"][resource] = 100
 
         return characteristics_dict
 

@@ -39,6 +39,8 @@ class gen_environment:
         """
         # ----- Setup reference properties
         self.name = name
+        self.type = "Environment"
+
         if POI_dict is not None:
             self.POI_dict = POI_dict
             self.graph = nx.Graph()
@@ -53,6 +55,8 @@ class gen_environment:
 
     def __repr__(self):
         return self.__str__()
+
+    # =============================================================================== Getters
 
     def get_POI_links(self, POI: "POI name"):
         return self.graph.edges(POI)
@@ -72,6 +76,35 @@ class gen_environment:
             for source in self.POI_dict[POI].ef_dict["Sources"].keys():
                 sources_dict[source] = self.POI_dict[POI].ef_dict["Sources"][source]
         return sources_dict
+
+    def plot_environment_graph(self):
+        pos = nx.get_node_attributes(self.graph, 'pos')
+        nx.draw(self.graph, pos, with_labels=True)
+
+        plt.show()
+        return
+
+    def get_POI_at_pos(self, pos: tuple):
+        for POI in self.POI_dict.keys():
+            if self.POI_dict[POI].pos == pos:
+                return POI
+            else:
+                print("!!! No POI at provided pos !!!")
+                return
+
+    def get_label_of_name(self, name: str):
+        for POI in self.POI_dict.keys():
+            if POI == name:
+                return self.POI_dict[POI].label
+            else:
+                for ef in self.POI_dict[POI].ef_dict.keys():
+                    if ef == name:
+                        return self.POI_dict[POI].ef_dict[ef].label
+                    else:
+                        pass
+        print("!!! Name not found !!!")
+
+    # =============================================================================== Setters
 
     def add_POI(self, POI: "POI Object"):
         self.POI_dict[POI.name] = POI
@@ -129,13 +162,6 @@ class gen_environment:
         edges = combinations(self.POI_dict.keys(), 2)
         for edge in edges:
             self.add_POI_link(edge[0], edge[1])
-        return
-
-    def plot_environment_graph(self):
-        pos = nx.get_node_attributes(self.graph, 'pos')
-        nx.draw(self.graph, pos, with_labels=True)
-
-        plt.show()
         return
 
     def gen_random_layout(self, nb_POI=6, nb_markets=3, nb_mines=6, nb_links_per_POI=3):

@@ -31,6 +31,7 @@ class gen_market(Converter):
                  characteristics: dict = None):
         # --> Initialising base class (building all ref properties)
         super().__init__(name, pos)
+        self.label = "Market"
 
         # --> Setup inventory/interests/characterisitcs dicts
         self.gen_dicts(traded_item_types, inventory, interests, characteristics)
@@ -38,7 +39,7 @@ class gen_market(Converter):
         # --> Initialising records
         self.transaction_records = []
 
-    def evaluate_transaction(self, date, agent: "Agent class instance", transaction_type, item_type, item, item_quantity):
+    def evaluate_transaction(self, date, agent: "Agent class instance", transaction_type: "buy/sell", item_type, item, item_quantity):
         interests_tools = Interests_tools()
 
         print("Transaction request recap:")
@@ -209,7 +210,11 @@ class gen_market(Converter):
             agent.inventory["Money"] -= price_per_item * item_quantity
 
             # --> Adding item to client's inventory
-            agent.inventory[item_type][item] += item_quantity
+            if item_type == "Items":
+                Inventory_tools().equip_item(agent, item, item_quantity)
+
+            else:
+                agent.inventory[item_type][item] += item_quantity
 
             # ---> Market account update
             # --> Crediting Market
@@ -228,7 +233,11 @@ class gen_market(Converter):
             agent.inventory["Money"] += price_per_item * item_quantity
 
             # --> removing item to client's inventory
-            agent.inventory[item_type][item] -= item_quantity
+            if item_type == "Items":
+                Inventory_tools().unequip_item(agent, item, item_quantity)
+
+            else:
+                agent.inventory[item_type][item] -= item_quantity
 
             # ---> Market account update
             # --> Debiting Market
@@ -245,9 +254,13 @@ class gen_market(Converter):
 
         return
 
-    def add_to_inventory(self, item_type, item, item_quantity):
+    def add_to_inventory(self, item_type, item, item_quantity, force_add=False):
         # --> Checking whether item type is in the Market's inventory
-        if item_type in self.inventory.keys():
+        if item_type in self.inventory.keys() or force_add is True:
+
+            # --> Create item type if force_add is true
+            if item_type not in self.inventory.keys():
+                self.inventory[item_type] = {}
 
             # --> Checking if item is already in inventory
             if item in self.inventory[item_type].keys():

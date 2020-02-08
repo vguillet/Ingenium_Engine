@@ -19,41 +19,74 @@ __date__ = '31/01/2020'
 
 
 class Interests_tools:
-    @staticmethod
-    def gen_agent_interests_dict(bias=None):
-        interests_dict = {"Resources": {"Iron": {"Expectation": 30,
-                                                 "Minimum": 20,
-                                                 "Maximum": 40},
-                                        "Gold": {"Expectation": 50,
-                                                 "Minimum": 45,
-                                                 "Maximum": 60},
-                                        "Diamond": {"Expectation": 200,
-                                                    "Minimum": 185,
-                                                    "Maximum": 210}}
-                          }
+    def __init__(self):
+        self.ref_interests_dict = {"Resources": {"Iron": {"Expectation": 30,
+                                                          "Minimum": 20,
+                                                          "Maximum": 40},
 
-        return interests_dict
+                                                 "Gold": {"Expectation": 50,
+                                                          "Minimum": 45,
+                                                          "Maximum": 60},
 
-    @staticmethod
-    def gen_market_interests_dict(traded_item_types):
-        # --> Setting up reference interest dictionary
-        ref_interests_dict = {"Resources": {"Iron": {"Expectation": 30,
-                                                     "Minimum": 20,
-                                                     "Maximum": 40},
-                                            "Gold": {"Expectation": 50,
-                                                     "Minimum": 45,
-                                                     "Maximum": 60},
-                                            "Diamond": {"Expectation": 200,
+                                                 "Diamond": {"Expectation": 200,
+                                                             "Minimum": 185,
+                                                             "Maximum": 210}},
+
+                                   "Items": {"S Health": {"Expectation": 30,
+                                                          "Minimum": 20,
+                                                          "Maximum": 40},
+
+                                             "M Health": {"Expectation": 50,
+                                                          "Minimum": 45,
+                                                          "Maximum": 60},
+
+                                             "L Health": {"Expectation": 200,
+                                                          "Minimum": 185,
+                                                          "Maximum": 210},
+
+                                             "S Weapon": {"Expectation": 30,
+                                                          "Minimum": 20,
+                                                          "Maximum": 40},
+
+                                             "M Weapon": {"Expectation": 50,
+                                                          "Minimum": 45,
+                                                          "Maximum": 60},
+
+                                             "L Weapon": {"Expectation": 200,
+                                                          "Minimum": 185,
+                                                          "Maximum": 210},
+
+                                             "S Armor": {"Expectation": 30,
+                                                         "Minimum": 20,
+                                                         "Maximum": 40},
+
+                                             "M Armor": {"Expectation": 50,
+                                                         "Minimum": 45,
+                                                         "Maximum": 60},
+
+                                             "L Armor": {"Expectation": 200,
+                                                         "Minimum": 185,
+                                                         "Maximum": 210},
+
+                                             "S Tool": {"Expectation": 30,
+                                                        "Minimum": 20,
+                                                        "Maximum": 40},
+
+                                             "M Tool": {"Expectation": 50,
+                                                        "Minimum": 45,
+                                                        "Maximum": 60},
+
+                                             "L Tool": {"Expectation": 200,
                                                         "Minimum": 185,
-                                                        "Maximum": 210}}
-                              }
+                                                        "Maximum": 210}
+                                             }
+                                   }
 
-        # --> Setting up interest dictionary
-        interests_dict = {}
-        for item_type in traded_item_types:
-            interests_dict[item_type] = ref_interests_dict[item_type]
+    def gen_agent_interests_dict(self):
+        return self.ref_interests_dict
 
-        return interests_dict
+    def gen_market_interests_dict(self, traded_item_types):
+        return self.ref_interests_dict
 
     @staticmethod
     def increase_expectation(expectation_dict, surplus=None, increase_percent=0, setting=1):

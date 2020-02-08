@@ -52,6 +52,31 @@ class QL_optimiser:
 
         self.starting_env.plot_environment_graph()
 
+        # --> Supplying mines
+        resources_list = ["Iron", "Gold", "Diamond"]
+        for i, mine in enumerate(self.starting_env.sources_dict.keys()):
+            self.starting_env.sources_dict[mine].add_to_inventory(resources_list[i], 100)
+
+        # --> Supplying market
+        for i, market in enumerate(self.starting_env.converters_dict.keys()):
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "S Health", 10, force_add=True)
+            print(self.starting_env.converters_dict[market].interests)
+
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "M Health", 5, force_add=True)
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "L Health", 3, force_add=True)
+
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "S Weapon", 10, force_add=True)
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "M Weapon", 5, force_add=True)
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "L Weapon", 3, force_add=True)
+
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "S Armor", 10, force_add=True)
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "M Armor", 5, force_add=True)
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "L Armor", 3, force_add=True)
+
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "S Tool", 10, force_add=True)
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "M Tool", 5, force_add=True)
+            self.starting_env.converters_dict[market].add_to_inventory("Items", "L Tool", 3, force_add=True)
+
         # ----- Gen agents
         self.agents = []
         for _ in range(self.settings.agent_settings.nb_agents):
@@ -59,9 +84,19 @@ class QL_optimiser:
             agent_starting_position = self.starting_env.POI_dict[random.choice(list(self.starting_env.POI_dict.keys()))].pos
             self.agents.append(gen_Agent(agent_name, agent_starting_position))
 
+        for i, market in enumerate(self.starting_env.converters_dict.keys()):
+            print(self.starting_env.converters_dict[market].interests)
+            self.starting_env.converters_dict[market].evaluate_transaction("",
+                                                                           self.agents[-1],
+                                                                           "buy",
+                                                                           "Items",
+                                                                           "S Tool",
+                                                                           1)
+
+
         # ----- Gen initial Q-table
         # --> List number of position states
-        nb
+        nb_position_states = self.settings.environment_settings.nb_POI
         
         self.q_table = np.random.uniform(size=())
 

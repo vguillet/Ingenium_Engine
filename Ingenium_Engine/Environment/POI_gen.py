@@ -25,6 +25,7 @@ class gen_POI:
     def __init__(self, name, label, pos: tuple, mine_count=1, market_count=1, ef_dict=None):
         # ----- Setup reference properties
         self.name = name
+        self.type = "POI"
         self.label = label
 
         # --> Setup POI position

@@ -5,13 +5,13 @@
 """
 
 # Built-in/Generic Imports
+import random
 
 # Libs
 
 # Own modules
 from Ingenium_Engine.Environment.Sources.Source_gen import Source
 from Ingenium_Engine.Tools.Inventory_tools import Inventory_tools
-from Ingenium_Engine.Tools.Interests_tools import Interests_tools
 from Ingenium_Engine.Tools.Characteristics_tools import Characteristics_tools
 
 __version__ = '1.1.1'
@@ -28,9 +28,7 @@ class Mine(Source):
                  characteristics: dict = None):
         # --> Initialising base class (building all ref properties)
         super().__init__(name, pos)
-        self.name = name
         self.label = "Mine"
-        self.ef_type = "Source"
 
         # --> Setup inventory/interests/characteristics dicts
         self.gen_dicts(inventory, characteristics)
@@ -38,15 +36,51 @@ class Mine(Source):
         # --> Initialising records
         self.transaction_records = []
 
+    def mine(self, agent, resource):
+        mined_quantity = 5
+
+        # --> Checking if mine is not empty
+        if self.inventory["Resources"][resource] > 0:
+
+            # --> Checking if agent tool is sufficient to mine resource
+            if agent.characteristics["Tool"] >= self.characteristics["RMD"][resource]:
+
+                # --> Adjusting mined quantity if not available
+                if self.inventory["Resources"][resource] < mined_quantity:
+                    mined_quantity = self.inventory["Resources"][resource]
+
+                # --> Remove resource from mine inventory
+                self.inventory["Resources"][resource] -= mined_quantity
+
+                print("Mined " + str(mined_quantity) + " " + resource + " successfully")
+
+                # --> Add resource to agent inventory
+                if resource in list(agent.inventory["Resources"].keys()):
+                    agent.inventory["Resources"][resource] += mined_quantity
+                    return
+
+                else:
+                    agent.inventory["Resources"][resource] = mined_quantity
+                    return
+
+            else:
+                print("Tool level " + str(agent.characteristics["Tool"]) + " insufficent to mine " + str(resource) + " (req: " +
+                      str(self.characteristics["RMD"][resource]) + ")")
+                return
+
+        else:
+            print("Mine is empty")
+            return
+
     def add_to_inventory(self, resource, resource_quantity):
         # --> Checking if item is already in inventory
         if resource in self.inventory["Resources"].keys():
             self.inventory["Resources"][resource] += resource_quantity
-            return
 
         else:
             self.inventory["Resources"][resource] = resource_quantity
-            return
+
+        self.characteristics = Characteristics_tools().gen_mine_characteristics_dict(self.inventory)
 
     def remove_from_inventory(self, resource, resource_quantity):
         # --> Checking if resource is in inventory
@@ -58,7 +92,8 @@ class Mine(Source):
 
             else:
                 self.inventory["Resources"][resource] = 0
-                return
+
+            self.characteristics = Characteristics_tools().gen_mine_characteristics_dict(self.inventory)
 
         else:
             print("Resource not in inventory")
