@@ -45,9 +45,14 @@ class gen_environment:
         self.POI_dict = {}
         self.graph = nx.Graph()
 
-        self.gen_random_layout(nb_POI, nb_markets, nb_mines, environment_size)
+        self.gen_random_layout(nb_POI, nb_markets, nb_mines, nb_links_per_POI, environment_size)
+
+        self.save_environment_graph()
 
     # =============================================================================== Getters
+
+    def get_POI_links(self, POI: "POI name"):
+        return self.graph.edges(POI)
 
     @property
     def converters_dict(self):
@@ -64,27 +69,6 @@ class gen_environment:
             for source in self.POI_dict[POI].ef_dict["Sources"].keys():
                 sources_dict[source] = self.POI_dict[POI].ef_dict["Sources"][source]
         return sources_dict
-
-    @property
-    def high(self):
-        # --> Max x and y
-        high_lst = [self.size[0], self.size[-1]]
-
-        # --> Add max distance for each POI (diagonal of env)
-        max_distance = (self.size[0] ** 2 + self.size[-1] ** 2) ** (1 / 2)
-        for _ in self.POI_dict.keys():
-            high_lst.append(max_distance)
-        return high_lst
-
-    @property
-    def low(self):
-        # --> Max x and y
-        low_lst = [0, 0]
-
-        # --> Add max distance for each POI (diagonal of env)
-        for _ in self.POI_dict.keys():
-            low_lst.append(0)
-        return low_lst
 
     def plot_environment_graph(self):
         pos = nx.get_node_attributes(self.graph, 'pos')
@@ -136,7 +120,55 @@ class gen_environment:
         self.graph.remove_node(POI.name)
         return
 
-    def gen_random_layout(self, nb_POI=6, nb_markets=3, nb_mines=6, environment_size=(800, 800)):
+    def add_POI_link(self, POI_1: "POI Name", POI_2: "POI Name"):
+        self.graph.add_edge(POI_1, POI_2)
+        return
+
+    def add_close_POI_links(self, nb_close_links):
+        existing_links = []
+
+        # --> Adding edges
+        for current_POI in self.POI_dict.keys():
+            distance = []
+            adjacent_POIs = []
+
+            for POI in self.POI_dict.keys():
+                if current_POI == POI:
+                    pass
+                else:
+                    adjacent_POIs.append(self.POI_dict[POI])
+                    pos_current = self.POI_dict[current_POI].pos
+                    pos = self.POI_dict[POI].pos
+
+                    # --> Compute distance between current POI and other
+                    distance.append(((pos_current[0] - pos[0]) ** 2 + (pos_current[1] - pos[1]) ** 2) ** (1 / 2))
+
+                # --> Sort POIs from closest to farthest from current POI
+                for j in range(len(distance)):
+                    for i in range(len(distance) - 1):
+                        if distance[i] > distance[i + 1]:
+                            distance[i], distance[i + 1] = distance[i + 1], distance[i]
+                            adjacent_POIs[i], adjacent_POIs[i + 1] = adjacent_POIs[i + 1], adjacent_POIs[i]
+
+            # --> Create edge between x closest POI
+            for k in range(nb_close_links):
+                link = [self.POI_dict[current_POI].name, adjacent_POIs[k].name]
+                link.sort()
+
+                if link in existing_links:
+                    pass
+                else:
+                    existing_links.append(link)
+                    self.add_POI_link(self.POI_dict[current_POI].name, adjacent_POIs[k].name)
+        return
+
+    def add_all_POI_links(self):
+        edges = combinations(self.POI_dict.keys(), 2)
+        for edge in edges:
+            self.add_POI_link(edge[0], edge[1])
+        return
+
+    def gen_random_layout(self, nb_POI=6, nb_markets=3, nb_mines=6, nb_links_per_POI=3, environment_size=(800, 800)):
         # --> Seeding generators
         Faker.seed(4323)
         random.seed(43)
@@ -172,6 +204,8 @@ class gen_environment:
             self.add_POI(gen_POI(name, "City", pos,
                                  mine_count=mines,
                                  market_count=markets))
+
+        self.add_close_POI_links(nb_links_per_POI)
 
         print("-- Random environment layout generated successfully --")
 

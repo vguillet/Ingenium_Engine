@@ -86,6 +86,7 @@ class Interests_tools:
         return self.ref_interests_dict
 
     def gen_market_interests_dict(self, traded_item_types):
+        # TODO: Rethink market interest dict gen
         return self.ref_interests_dict
 
     @staticmethod

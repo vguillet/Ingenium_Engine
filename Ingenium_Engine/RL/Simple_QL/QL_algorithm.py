@@ -43,14 +43,15 @@ class QL_optimiser:
         Faker.seed(345)
 
         # ----- Gen initial training environment
+        environment_size = 800
         self.starting_env = gen_environment("Ingenium_1",
                                             self.settings.environment_settings.nb_POI,
                                             self.settings.environment_settings.nb_markets,
                                             self.settings.environment_settings.nb_mines,
                                             self.settings.environment_settings.nb_link_per_POI,
-                                            POI_dict=None)
+                                            environment_size=(environment_size, environment_size))
 
-        self.starting_env.plot_environment_graph()
+        # self.starting_env.plot_environment_graph()
 
         # --> Supplying mines
         resources_list = ["Iron", "Gold", "Diamond"]
@@ -60,8 +61,6 @@ class QL_optimiser:
         # --> Supplying market
         for i, market in enumerate(self.starting_env.converters_dict.keys()):
             self.starting_env.converters_dict[market].add_to_inventory("Items", "S Health", 10, force_add=True)
-            print(self.starting_env.converters_dict[market].interests)
-
             self.starting_env.converters_dict[market].add_to_inventory("Items", "M Health", 5, force_add=True)
             self.starting_env.converters_dict[market].add_to_inventory("Items", "L Health", 3, force_add=True)
 
@@ -78,26 +77,14 @@ class QL_optimiser:
             self.starting_env.converters_dict[market].add_to_inventory("Items", "L Tool", 3, force_add=True)
 
         # ----- Gen agents
-        self.agents = []
+        self.agents = {}
         for _ in range(self.settings.agent_settings.nb_agents):
             agent_name = fake.name()
             agent_starting_position = self.starting_env.POI_dict[random.choice(list(self.starting_env.POI_dict.keys()))].pos
-            self.agents.append(gen_Agent(agent_name, agent_starting_position))
+            self.agents[agent_name] = gen_Agent(self.starting_env, agent_name, agent_starting_position)
 
-        for i, market in enumerate(self.starting_env.converters_dict.keys()):
-            self.starting_env.converters_dict[market].evaluate_transaction("",
-                                                                           self.agents[-1],
-                                                                           "buy",
-                                                                           "Items",
-                                                                           "L Health",
-                                                                           1)
-
-
-        # ----- Gen initial Q-table
-        # --> List number of position states
-        nb_position_states = self.settings.environment_settings.nb_POI
-        
-        self.q_table = np.random.uniform(size=())
+        # ----- Gen initial Q-tables
+        self.gen_q_tables(self.settings.rl_behavior_settings.bucket_sizes)
 
         # ----- Initialise trackers
         self.progress_bar = Progress_bar(max_step=self.settings.rl_behavior_settings.episodes, label="Episode")
@@ -108,6 +95,40 @@ class QL_optimiser:
 
         # ======================== RESULTS ==============================================
 
+    def gen_q_tables(self, nb_buckets=20):
+        self.q_tables = {}
+        for agent in self.agents.keys():
+            nb_actions = len(self.agents[agent].get_action_lst(self.starting_env)[0])
+            nb_states = len(self.agents[agent].get_observations(self.starting_env))
 
-if __name__ == "__main__":
-    sim = QL_optimiser()
+            # --> Get environment high/low for bucket computation
+            os_high = self.starting_env.high
+            os_low = self.starting_env.low
+
+            # --> Add characteristics high/low
+            # For tool:
+            os_high.append(100)
+            os_low.append(0)
+
+            # --> Add Cargo high/low
+            os_high.append(5)
+            os_low.append(0)
+
+            # --> Add inventory high/low
+            for _ in self.agents[agent].inventory["Resources"].keys():
+                os_high.append(5)
+                os_low.append(0)
+
+            # For money
+            os_high.append(self.settings.agent_settings.max_money)
+            os_low.append(0)
+
+            # --> Compute discrete observations window size
+            discrete_os_size = [nb_buckets] * nb_states
+            discrete_os_win_size = (np.array(os_high) - np.array(os_low)) / discrete_os_size
+            # --> Initiate Q table
+            print(discrete_os_size + [nb_actions])
+            self.q_tables[agent] = np.random.uniform(low=-2, high=0, size=(nb_states*nb_buckets,
+                                                                           nb_states*nb_buckets,
+                                                                           nb_actions))
+            print(self.q_tables[agent].shape)

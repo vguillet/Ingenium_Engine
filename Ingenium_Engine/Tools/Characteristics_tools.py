@@ -43,8 +43,8 @@ class Characteristics_tools:
                                 "Health": 100,
                                 "Weapon": 0,
                                 "Armor": 0,
-                                "Tool": 0,
-                                }
+                                "Tool": 20,
+                                "Cargo": 5}
 
         return characteristics_dict
 

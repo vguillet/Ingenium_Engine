@@ -63,7 +63,7 @@ class gen_market(Converter):
                         # --> Check whether agent expectation/ market expectation interests match:
                         if agent.interests[item_type][item]["Expectation"] >= self.interests[item_type][item]["Expectation"]:
 
-                            # TODO: Setup price_per_item based on traits
+                            # TODO: Setup price_per_item based on traits (GA upgrade)
                             # --> Computing price per item based on interest (meet in the middle rn)
                             price_per_item = (agent.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"])/2 + self.interests[item_type][item]["Expectation"]
 
@@ -221,7 +221,7 @@ class gen_market(Converter):
                 Inventory_tools().equip_item(agent, item, item_quantity)
 
             else:
-                agent.inventory[item_type][item] += item_quantity
+                agent.inventory[item_type][item] += Inventory_tools().get_gathered_quantity(agent, item_quantity)
 
             # ---> Market account update
             # --> Crediting Market
@@ -256,8 +256,8 @@ class gen_market(Converter):
         # ----- Clean up inventories
         inventory_tools = Inventory_tools()
 
-        self.inventory = inventory_tools.clean_inventory(self.inventory)
-        agent.inventory = inventory_tools.clean_inventory(agent.inventory)
+        # self.inventory = inventory_tools.clean_inventory(self.inventory)
+        # agent.inventory = inventory_tools.clean_inventory(agent.inventory)
 
         return
 

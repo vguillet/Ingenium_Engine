@@ -54,13 +54,16 @@ class Mine(Source):
 
                 print("Mined " + str(mined_quantity) + " " + resource + " successfully")
 
+                # --> Adjust gathered quantity to available cargo space
+                gathered_quantity = Inventory_tools().get_gathered_quantity(agent, mined_quantity)
+
                 # --> Add resource to agent inventory
                 if resource in list(agent.inventory["Resources"].keys()):
-                    agent.inventory["Resources"][resource] += mined_quantity
+                    agent.inventory["Resources"][resource] += gathered_quantity
                     return
 
                 else:
-                    agent.inventory["Resources"][resource] = mined_quantity
+                    agent.inventory["Resources"][resource] = gathered_quantity
                     return
 
             else:

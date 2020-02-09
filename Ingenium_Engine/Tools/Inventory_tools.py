@@ -24,7 +24,8 @@ class Inventory_tools:
     def gen_agent_inventory_dict(bias=None):
         inventory_dict = {"Money": 100,
                           "Resources": {"Iron": 0,
-                                        "Gold": 0
+                                        "Gold": 0,
+                                        "Diamond": 0,
                                         },
                           "Items": {}
                           }
@@ -98,3 +99,16 @@ class Inventory_tools:
                         del inventory_dict[item_type][item]
 
         return inventory_dict
+
+    @staticmethod
+    def get_gathered_quantity(agent, quantity):
+        # --> Adjust gathered quantity to available cargo space
+        if agent.characteristics["Cargo"] - agent.used_cargo < quantity:
+            gathered_quantity = agent.characteristics["Cargo"] - agent.used_cargo
+            if gathered_quantity < 0:
+                print("No cargo space available")
+                return 0
+            else:
+                return gathered_quantity
+        else:
+            return quantity

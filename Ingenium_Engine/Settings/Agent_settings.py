@@ -21,3 +21,6 @@ class Agent_settings:
     def gen_agent_settings(self):
         # --> Agent properties
         self.nb_agents = 1
+
+        self.max_age = 100
+        self.max_money = 1000
