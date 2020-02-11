@@ -25,7 +25,7 @@ __date__ = '31/01/2020'
 
 
 class gen_environment:
-    def __init__(self, name: str, nb_POI: int = 6, nb_markets: int = 3, nb_mines: int = 6, nb_links_per_POI: int = 3,
+    def __init__(self, name: str, nb_POI: int = 6, nb_markets: int = 3, nb_mines: int = 6,
                  environment_size: tuple = (800, 800)):
         """
         Environment class, used to generate Ingenium environments

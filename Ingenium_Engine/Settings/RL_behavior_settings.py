@@ -23,7 +23,7 @@ class RL_behavior_settings:
         self.show_every = 2000
 
         # --> Learning settings
-        self.bucket_sizes = 40
+        self.nb_bucket = 10
         self.learning_rate = 0.1
 
         self.discount = 0.95

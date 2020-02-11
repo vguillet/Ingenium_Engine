@@ -7,6 +7,7 @@
 # Built-in/Generic Imports
 
 # Libs
+import numpy as np
 
 # Own modules
 from Ingenium_Engine.Settings.SETTINGS import SETTINGS
@@ -31,12 +32,28 @@ class gen_Agent:
                  inventory: dict = None,
                  interests: dict = None,
                  characteristics: dict = None):
+        # ----- Setup settings
+        self.settings = SETTINGS()
+        self.settings.agent_settings.gen_agent_settings()
+
         # ----- Setup reference properties
         self.name = name
         self.pos = pos
 
+        self.starting_pos = pos
+        self.starting_traits = traits
+        self.starting_inventory = inventory
+        self.starting_interests = interests
+        self.starting_characteristics = characteristics
+
         # --> Setup traits/inventory/interests/characteristics dicts
-        self.gen_dicts(traits, inventory, interests, characteristics)
+        self.gen_dicts(self.starting_traits,
+                       self.starting_inventory,
+                       self.starting_interests,
+                       self.starting_characteristics)
+
+        # --> Setup Q-table
+        self.gen_q_table(environment, self.settings.rl_behavior_settings.nb_bucket)
 
         # --> Setup trackers
         self.profit = []
@@ -59,9 +76,6 @@ class gen_Agent:
         :param action:
         :return:
         """
-        settings = SETTINGS()
-        settings.agent_settings.gen_agent_settings()
-
         prev_money = self.inventory["Money"]
 
         # --> Perform action
@@ -81,8 +95,8 @@ class gen_Agent:
         new_state = self.get_observations(environment)
         reward = self.profit[-1]
 
-        if self.characteristics["Age"] > settings.agent_settings.max_age \
-                or self.inventory["Money"] >= settings.agent_settings.max_money:
+        if self.characteristics["Age"] > self.settings.agent_settings.max_age \
+                or self.inventory["Money"] >= self.settings.agent_settings.max_money:
             done = True
         else:
             done = False
@@ -97,10 +111,10 @@ class gen_Agent:
         state.append(self.pos[0])
         state.append(self.pos[-1])
 
-        # --> Add distance from other POIs
-        for POI in environment.POI_dict.keys():
-            pos = environment.POI_dict[POI].pos
-            state.append(((self.pos[0] - pos[0]) ** 2 + (self.pos[1] - pos[1]) ** 2) ** (1 / 2))
+        # # --> Add distance from other POIs
+        # for POI in environment.POI_dict.keys():
+        #     pos = environment.POI_dict[POI].pos
+        #     state.append(((self.pos[0] - pos[0]) ** 2 + (self.pos[1] - pos[1]) ** 2) ** (1 / 2))
 
         # --> Add tool characteristic
         state.append(self.characteristics["Tool"])
@@ -161,6 +175,45 @@ class gen_Agent:
 
         return action_lst, available_action_lst
 
+    def gen_q_table(self, environment: "Environment Object", nb_buckets=20):
+        # ----- Build os high/low lists
+        # --> Get environment high/low for bucket computation
+        # self.os_high = environment.high
+        # self.os_low = environment.low
+        self.os_high = [800, 800]
+        self.os_low = [0, 0]
+
+        # --> Add characteristics high/low
+        # tool:
+        self.os_high.append(100)
+        self.os_low.append(0)
+
+        # --> Add Cargo high/low
+        self.os_high.append(5)
+        self.os_low.append(0)
+
+        # --> Add inventory high/low
+        # Resources
+        for _ in self.inventory["Resources"].keys():
+            self.os_high.append(5)
+            self.os_low.append(0)
+
+        # Money
+        self.os_high.append(self.settings.agent_settings.max_money)
+        self.os_low.append(0)
+
+        # ----- Compute discrete observation window size and build q table
+        self.nb_states = len(self.get_observations(environment))
+        self.nb_actions = len(self.get_action_lst(environment)[0])
+
+        # --> Compute discrete observations window size
+        discrete_os_size = [nb_buckets] * self.nb_states
+        self.discrete_os_win_size = (np.array(self.os_high) - np.array(self.os_low)) / discrete_os_size
+
+        # --> Initiate Q table
+        self.q_table = np.random.uniform(low=-2, high=0, size=(discrete_os_size + [self.nb_actions]))
+        print(self.q_table.shape)
+
     def gen_dicts(self,
                   traits: dict,
                   inventory: dict,
@@ -189,6 +242,16 @@ class gen_Agent:
             self.characteristics = characteristics
         else:
             self.characteristics = Characteristics_tools().gen_agent_characteristics_dict()
+
+    def reset_agent(self):
+        # --> Reset position
+        self.pos = self.starting_pos
+
+        # --> Reset dictionaries
+        self.gen_dicts(self.starting_traits,
+                       self.starting_inventory,
+                       self.starting_interests,
+                       self.starting_characteristics)
 
     def __str__(self):
         return self.name + " (Bot)"
