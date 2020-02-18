@@ -25,8 +25,7 @@ __date__ = '31/01/2020'
 
 
 class gen_environment:
-    def __init__(self, name: str, nb_POI: int = 6, nb_markets: int = 3, nb_mines: int = 6,
-                 environment_size: tuple = (800, 800)):
+    def __init__(self, name: str, nb_POI: int = 6, nb_markets: int = 3, nb_mines: int = 6, environment_size: tuple = (800, 800)):
         """
         Environment class, used to generate Ingenium environments
 
@@ -153,17 +152,23 @@ class gen_environment:
         # --> Adding POI to environment
         for i in range(nb_POI):
             # --> Generate POI name
-            name = fake.first_name() + " City"
+            name = fake.first_name() + "_City"
             while name in name_list:
-                name = fake.first_name() + " City"
+                name = fake.first_name() + "_City"
             name_list.append(name)
 
-            # --> Generate random ed count
-            mines = random.randint(0, mine_count)
-            mine_count -= mines
+            if i != nb_POI-1:
+                # --> Generate random ed count
+                mines = random.randint(0, mine_count)
+                mine_count -= mines
 
-            markets = random.randint(0, market_count)
-            market_count -= markets
+                markets = random.randint(0, market_count)
+                market_count -= markets
+
+            else:
+                # --> If last POI, add all missing ef:
+                mines = mine_count
+                markets = market_count
 
             # --> Generate city position
             pos = (random.randint(0, environment_size[0]), random.randint(0, environment_size[-1]))

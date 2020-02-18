@@ -54,7 +54,7 @@ class gen_POI:
 
     @staticmethod
     def gen_ef_dict(pos: tuple, mine_count=0, market_count=0):
-        from Ingenium_Engine.Environment.Sources.Mine_gen import Mine
+        from Ingenium_Engine.Environment.Sources.Mine_gen import gen_mine
         from Ingenium_Engine.Environment.Converters.Market_gen import gen_market
 
         ef_dict = {"Sources": {},
@@ -63,11 +63,11 @@ class gen_POI:
         fake = Faker()
 
         for mine in range(mine_count):
-            name = fake.name().split(" ")[0] + " Mine"
-            ef_dict["Sources"][name] = Mine(name, pos)
+            name = fake.name().split(" ")[0] + "_Mine"
+            ef_dict["Sources"][name] = gen_mine(name, pos)
 
         for market in range(market_count):
-            name = fake.name().split(" ")[0] + " Market"
+            name = fake.name().split(" ")[0] + "_Market"
             ef_dict["Converters"][name] = gen_market(name, pos, ["Resources"])
 
         return ef_dict

@@ -32,51 +32,51 @@ class Interests_tools:
                                                              "Minimum": 185,
                                                              "Maximum": 210}},
 
-                                   "Items": {"S Health": {"Expectation": 30,
+                                   "Items": {"S_Health": {"Expectation": 30,
                                                           "Minimum": 20,
                                                           "Maximum": 40},
 
-                                             "M Health": {"Expectation": 50,
+                                             "M_Health": {"Expectation": 50,
                                                           "Minimum": 45,
                                                           "Maximum": 60},
 
-                                             "L Health": {"Expectation": 200,
+                                             "L_Health": {"Expectation": 200,
                                                           "Minimum": 185,
                                                           "Maximum": 210},
 
-                                             "S Weapon": {"Expectation": 30,
+                                             "S_Weapon": {"Expectation": 30,
                                                           "Minimum": 20,
                                                           "Maximum": 40},
 
-                                             "M Weapon": {"Expectation": 50,
+                                             "M_Weapon": {"Expectation": 50,
                                                           "Minimum": 45,
                                                           "Maximum": 60},
 
-                                             "L Weapon": {"Expectation": 200,
+                                             "L_Weapon": {"Expectation": 200,
                                                           "Minimum": 185,
                                                           "Maximum": 210},
 
-                                             "S Armor": {"Expectation": 30,
+                                             "S_Armor": {"Expectation": 30,
                                                          "Minimum": 20,
                                                          "Maximum": 40},
 
-                                             "M Armor": {"Expectation": 50,
+                                             "M_Armor": {"Expectation": 50,
                                                          "Minimum": 45,
                                                          "Maximum": 60},
 
-                                             "L Armor": {"Expectation": 200,
+                                             "L_Armor": {"Expectation": 200,
                                                          "Minimum": 185,
                                                          "Maximum": 210},
 
-                                             "S Tool": {"Expectation": 30,
+                                             "S_Tool": {"Expectation": 30,
                                                         "Minimum": 20,
                                                         "Maximum": 40},
 
-                                             "M Tool": {"Expectation": 50,
+                                             "M_Tool": {"Expectation": 50,
                                                         "Minimum": 45,
                                                         "Maximum": 60},
 
-                                             "L Tool": {"Expectation": 200,
+                                             "L_Tool": {"Expectation": 200,
                                                         "Minimum": 185,
                                                         "Maximum": 210}
                                              }

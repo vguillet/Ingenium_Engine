@@ -39,7 +39,7 @@ class Characteristics_tools:
 
     @staticmethod
     def gen_agent_characteristics_dict():
-        characteristics_dict = {"Age": 0,
+        characteristics_dict = {"Age": 1,
                                 "Health": 100,
                                 "Weapon": 0,
                                 "Armor": 0,

@@ -22,5 +22,5 @@ class Agent_settings:
         # --> Agent properties
         self.nb_agents = 1
 
-        self.max_age = 100
+        self.max_age = 200
         self.max_money = 1000

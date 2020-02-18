@@ -9,6 +9,7 @@ A converter sub-class specialising in exchanging items for money (agenth selling
 # Libs
 
 # Own modules
+from Ingenium_Engine.Environment.Prints.Market_prints import Market_prints
 from Ingenium_Engine.Environment.Converters.Converter_gen import Converter
 from Ingenium_Engine.Tools.Transaction_gen import gen_transaction
 from Ingenium_Engine.Tools.Inventory_tools import Inventory_tools
@@ -33,20 +34,23 @@ class gen_market(Converter):
         super().__init__(name, pos)
         self.label = "Market"
 
-        # --> Setup inventory/interests/characterisitcs dicts
+        # --> Setup inventory/interests/characteristics dicts
         self.gen_dicts(traded_item_types, inventory, interests, characteristics)
 
         # --> Initialising records
         self.transaction_records = []
 
-    def evaluate_transaction(self, date, agent: "Agent class instance", transaction_type: "buy/sell", item_type, item, item_quantity):
+        # --> Initialise prints
+        self.prints = Market_prints()
+
+    def evaluate_transaction(self, date, agent: "Agent class instance", transaction_type: "buy or sell", item_type, item, item_quantity):
         interests_tools = Interests_tools()
 
-        print("Transaction request recap:")
-        print("Agent trading:", agent.name)
-
-        print("(Agent price) " + str(agent.interests[item_type][item]["Expectation"]) + " - " + str(self.interests[item_type][item]["Expectation"]) + " (Market price)")
-        print("(Quantity available) "  + str(self.inventory[item_type][item]) + " - " + str(item_quantity) + " (Quantity requested)\n")
+        self.prints.transaction_recap(agent.name, transaction_type,
+                                      item_type, item,
+                                      str(self.inventory[item_type][item]), str(item_quantity),
+                                      str(agent.interests[item_type][item]["Expectation"]),
+                                      str(self.interests[item_type][item]["Expectation"]))
 
         # ----- Performing buy transaction
         if transaction_type == "buy":
@@ -71,7 +75,7 @@ class gen_market(Converter):
                             if agent.inventory["Money"] < price_per_item * item_quantity:
                                 item_quantity = int(agent.inventory["Money"] / price_per_item)
                                 if item_quantity == 0:
-                                    print("Agent money too low for item")
+                                    self.prints.print_1()
                                     return
 
                             # --> Perform transaction
@@ -89,12 +93,10 @@ class gen_market(Converter):
                             agent.interests[item_type][item] = interests_tools.decrease_expectation(
                                 agent.interests[item_type][item], agent_surplus)
 
-                            print("Transaction succesfull, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " brought at " + str(price_per_item) + "$ per unit")
+                            self.prints.successful_buy_transaction_recap(item_quantity, item_type, item, price_per_item)
                             return
                             
                         else:
-                            print("Market expectation too high")
-
                             # --> Computing transaction shortfall
                             market_shortfall = self.interests[item_type][item]["Expectation"] - agent.interests[item_type][item]["Expectation"]
                             agent_shortfall = agent.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"]
@@ -107,36 +109,38 @@ class gen_market(Converter):
                             agent.interests[item_type][item] = interests_tools.increase_expectation(
                                 agent.interests[item_type][item], agent_shortfall)
 
+                            self.prints.print_1()
+                            return
 
                     # --> If item count is not available
                     else:
                         # --> Increasing market expectations
                         self.interests[item_type][item] = interests_tools.increase_expectation(self.interests[item_type][item],
-                                                                                                             setting=1)
+                                                                                               setting=1)
 
                         # --> Increasing agent expectations
                         agent.interests[item_type][item] = interests_tools.increase_expectation(agent.interests[item_type][item],
-                                                                                                             setting=1)
+                                                                                                setting=1)
 
-                        print("Requested " + item + " quantity not available (max available: " + str(self.inventory[item_type][item]) + " )")
+                        self.prints.print_3(item, self.inventory[item_type][item])
                         return
 
                 # --> If item is not available
                 else:
                     # --> Increasing market expectations
                     self.interests[item_type][item] = interests_tools.increase_expectation(self.interests[item_type][item],
-                                                                                                          setting=1)
+                                                                                           setting=1)
 
                     # --> Increasing agent expectations
                     agent.interests[item_type][item] = interests_tools.increase_expectation(agent.interests[item_type][item],
-                                                                                                         setting=1)
+                                                                                            setting=1)
 
-                    print("Requested " + item + " not available")
+                    self.prints.print_4(item)
                     return
 
             # --> If item type is not available
             else:
-                print(item_type + " not tradable in this market")
+                self.prints.print_5(item_type)
                 return
 
         # ----- Performing sell transaction
@@ -173,37 +177,39 @@ class gen_market(Converter):
                             agent.interests[item_type][item] = interests_tools.increase_expectation(
                                 agent.interests[item_type][item], agent_surplus)
 
-                            print("Transaction succesfull, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " sold at " + str(price_per_item) + "$ per unit")
+                            self.prints.successful_sell_transaction_recap(item_quantity, item_type, item, price_per_item)
                             return
 
                         else:
-                            print("Market funds insufficient")
+                            self.prints.print_6()
                             return
 
                     else:
-                        print("Market expectation too low")
-
                         # --> Computing transaction shortfall
                         market_shortfall = agent.interests[item_type][item]["Expectation"] - self.interests[item_type][item]["Expectation"]
                         agent_shortfall = self.interests[item_type][item]["Expectation"] - agent.interests[item_type][item]["Expectation"]
 
                         # --> Increasing market expectations
                         self.interests[item_type][item] = interests_tools.increase_expectation(
-                            self.interests[item_type][item], market_surplus)
+                            self.interests[item_type][item], market_shortfall)
 
                         # --> Decreasing agent expectations
                         agent.interests[item_type][item] = interests_tools.decrease_expectation(
-                            agent.interests[item_type][item], agent_surplus)
+                            agent.interests[item_type][item], agent_shortfall)
+
+                        self.prints.print_7()
+                        return
 
                 else:
-                    print("Requested " + item + " quantity not available (max available: " + str(agent.inventory[item_type][item]) + " )")
+                    self.prints.print_3(item, agent.inventory[item_type][item])
+                    return
 
             else:
-                print(item_type + " not tradable in this market")
+                self.prints.print_5(item_type)
                 return
 
         else:
-            print("Invalid transaction type")
+            self.prints.print_8()
             return
 
     def perform_transaction(self, date, agent, transaction_type, item_type, item, item_quantity, price_per_item):
@@ -279,7 +285,7 @@ class gen_market(Converter):
                 return
 
         else:
-            print(item_type + " not tradable in this market")
+            self.prints.print_5(item_type)
             return
 
     def remove_from_inventory(self, item_type, item, item_quantity):
@@ -295,7 +301,7 @@ class gen_market(Converter):
                 return
 
         else:
-            print("item not in inventory")
+            self.prints.print_9()
             return
 
     def gen_dicts(self,
@@ -326,9 +332,3 @@ class gen_market(Converter):
 
     def __repr__(self):
         return self.__str__()
-
-
-if __name__ == "__main__":
-    market = gen_market("Rosestones", (0, 0), "")
-    print(market)
-    market

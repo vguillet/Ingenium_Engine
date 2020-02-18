@@ -37,7 +37,7 @@ class gen_item:
         self.type = "Item"
         self.label = label
 
-        item_size = label.split()[0]
+        item_size = label.split("_")[0]
 
         if item_size == "S":
             self.rating = 5

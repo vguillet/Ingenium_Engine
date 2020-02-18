@@ -30,4 +30,7 @@ class gen_POI_visu(pg.sprite.Sprite):
         self.image.set_colorkey((255, 255, 255))  # Don't display black
 
         self.rect = self.image.get_rect()
-        self.rect.center = (POI.pos[0] - margin, POI.pos[-1] - 2*margin)
+        self.rect.center = (POI.pos[0] - margin, POI.pos[-1] - margin)
+
+    def update(self):
+        return

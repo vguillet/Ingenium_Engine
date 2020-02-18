@@ -27,7 +27,7 @@ class Inventory_tools:
                                         "Gold": 0,
                                         "Diamond": 0,
                                         },
-                          "Items": {}
+                          "Items": {"S_Tool": 0}
                           }
 
         return inventory_dict
@@ -51,7 +51,7 @@ class Inventory_tools:
 
         # --> Adjust agent characteristics according to item
         agent.characteristics = characteristics_tools.increase_characteristic(agent.characteristics,
-                                                                              item.label.split()[-1],
+                                                                              item.label.split("_")[-1],
                                                                               item.rating*item_quantity)
 
     @staticmethod
@@ -61,7 +61,7 @@ class Inventory_tools:
 
         # --> Adjust agent characteristics according to item
         agent.characteristics = characteristics_tools.decrease_characteristic(agent.characteristics,
-                                                                              item.label.split()[-1],
+                                                                              item.label.split("_")[-1],
                                                                               item.rating*item_quantity)
 
         # --> Remove item from agent inventory

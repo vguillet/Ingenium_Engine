@@ -17,10 +17,8 @@ __date__ = '7/02/2020'
 ##################################################################################################################
 
 
-class Environment_settings:
-    def gen_environment_settings(self):
-        # --> Environment properties
-        self.nb_POI = 3
-
-        self.nb_mines = 1
-        self.nb_markets = 1
+class Print_plot_settings:
+    def gen_rl_print_plot_settings(self):
+        # --> Environment plots
+        self.environment_prints = False
+        self.environment_plots = False

@@ -21,7 +21,7 @@ __date__ = '31/01/2020'
 ################################################################################################################
 
 
-class Mine(Source):
+class gen_mine(Source):
     def __init__(self, name: "Converter name",
                  pos: tuple,
                  inventory: dict = None,

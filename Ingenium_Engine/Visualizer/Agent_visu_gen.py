@@ -5,6 +5,7 @@
 """
 
 # Built-in/Generic Imports
+import math
 
 # Libs
 import pygame as pg
@@ -19,34 +20,73 @@ __date__ = '31/01/2020'
 
 
 class gen_agent_visu(pg.sprite.Sprite):
-    def __init__(self, agent: "Agent object", margin):
+    def __init__(self, agent: "Agent object", margin: int):
         super().__init__()
 
         # ----- Setup reference properties
         self.agent = agent
-        self.image = pg.image.load("Ingenium_Engine/Visualizer/Assets/agent.png").convert()
-        self.image = pg.transform.scale(self.image, (20, 20))
-        self.image.set_colorkey((0, 0, 0))  # Don't display black
+        self.original_image = pg.image.load("Ingenium_Engine/Visualizer/Assets/agent.png").convert()
+        self.original_image = pg.transform.scale(self.original_image, (20, 20))
+        self.original_image.set_colorkey((0, 0, 0))  # Don't display black
 
+        self.image = self.original_image
+
+        self.margin = margin
         self.rect = self.image.get_rect()
-        self.rect.center = (agent.pos[0] - margin, agent.pos[-1] - 2*margin)
+        self.rect.center = (agent.pos[0] - self.margin, agent.pos[1] - self.margin)
+        self.step = -1
 
-    # def update(self, new_pos):
-    #     self.rect.x = new_pos[0]
-    #     self.rect.y = new_pos[-1]
-    def update(self):
-        import random
-        self.rect.x += random.randint(-10, 10)
-        self.rect.y += random.randint(-10, 10)
+    def update(self, step):
+        # --> Update step tracker
+        self.step = step
 
-        if self.rect.x < 0:
-            self.rect.x = 0
+        if self.step >= len(self.agent.pos_history):
+            return
 
-        if self.rect.y < 0:
-            self.rect.y = 0
+        else:
+            # --> Save current parameters
+            x, y = self.rect.center
 
-        if self.rect.x > 800:
-            self.rect.x = 800
+            # --> Solve displacement
+            delta_x = self.agent.pos_history[self.step][0] - x
+            delta_y = self.agent.pos_history[self.step][1] - y
 
-        if self.rect.y > 800:
-            self.rect.y = 800
+            angle = (-math.atan2(delta_y, delta_x) * 180 / math.pi)
+
+            # --> Rotate image
+            self.image = pg.transform.rotate(self.original_image, int(angle))
+
+            # --> Move image
+            self.rect = self.image.get_rect()  # Replace old rect with new rect.
+            self.rect.center = (self.agent.pos_history[self.step][0] - self.margin,
+                                self.agent.pos_history[self.step][1] - self.margin)  # Put the new rect's center at old center.
+
+            return
+
+# def update(self):
+#         import random
+#         x, y = self.rect.center  # Save its current center.
+#
+#         delta_x = random.randint(-20, 20)
+#         delta_y = random.randint(-20, 20)
+#
+#         angle = (math.atan2(delta_y, delta_x)*180/math.pi)
+#
+#         # --> Rotate image
+#         self.image = pg.transform.rotate(self.original_image, angle)
+#
+#         # --> Move image
+#         self.rect = self.image.get_rect()  # Replace old rect with new rect.
+#         self.rect.center = (x + delta_x, y + delta_y)  # Put the new rect's center at old center.
+#
+#         if self.rect.x < 0:
+#             self.rect.x = 0
+#
+#         if self.rect.y < 0:
+#             self.rect.y = 0
+#
+#         if self.rect.x > 800:
+#             self.rect.x = 800
+#
+#         if self.rect.y > 800:
+#             self.rect.y = 800
