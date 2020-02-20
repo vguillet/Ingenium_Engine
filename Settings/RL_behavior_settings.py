@@ -19,18 +19,18 @@ __date__ = '7/02/2020'
 
 class RL_behavior_settings:
     def gen_simple_ql_settings(self):
-        # --> Visualiser settings
-        self.show_every = 100
+        # --> Run / Visualiser settings
+        self.episodes = 100000
+        self.show_every = 1000
 
         # --> Learning settings
-        self.nb_bucket = 5
-        self.learning_rate = 0.1
+        self.nb_bucket = 3
 
-        self.discount = 0.95
-        self.episodes = 25000
+        self.learning_rate = 0.6        #     learn nothing 0 <-- x --> 1 only consider recent info
+        self.discount = 0.75            # short-term reward 0 <-- x --> 1 long-term reward
 
         # --> Exploration settings
-        self.epsilon = 2
+        self.epsilon = 5               # Probability (percent) of taking random action
 
         # --> Decay settings
         self.decay_functions = ["Fixed value", "Linear decay", "Exponential decay", "Logarithmic decay"]

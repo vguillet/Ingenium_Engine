@@ -32,55 +32,63 @@ class Interests_tools:
                                                              "Minimum": 185,
                                                              "Maximum": 210}},
 
-                                   "Items": {"S_Health": {"Expectation": 30,
-                                                          "Minimum": 20,
-                                                          "Maximum": 40},
-
-                                             "M_Health": {"Expectation": 50,
-                                                          "Minimum": 45,
-                                                          "Maximum": 60},
-
-                                             "L_Health": {"Expectation": 200,
-                                                          "Minimum": 185,
-                                                          "Maximum": 210},
-
-                                             "S_Weapon": {"Expectation": 30,
-                                                          "Minimum": 20,
-                                                          "Maximum": 40},
-
-                                             "M_Weapon": {"Expectation": 50,
-                                                          "Minimum": 45,
-                                                          "Maximum": 60},
-
-                                             "L_Weapon": {"Expectation": 200,
-                                                          "Minimum": 185,
-                                                          "Maximum": 210},
-
-                                             "S_Armor": {"Expectation": 30,
-                                                         "Minimum": 20,
-                                                         "Maximum": 40},
-
-                                             "M_Armor": {"Expectation": 50,
-                                                         "Minimum": 45,
-                                                         "Maximum": 60},
-
-                                             "L_Armor": {"Expectation": 200,
-                                                         "Minimum": 185,
-                                                         "Maximum": 210},
+                                   "Items": {
+                                            # "S_Health": {"Expectation": 30,
+                                            #              "Minimum": 20,
+                                            #              "Maximum": 40},
+                                            #
+                                            #  "M_Health": {"Expectation": 50,
+                                            #               "Minimum": 45,
+                                            #               "Maximum": 60},
+                                            #
+                                            #  "L_Health": {"Expectation": 200,
+                                            #               "Minimum": 185,
+                                            #               "Maximum": 210},
+                                            #
+                                            #  "S_Weapon": {"Expectation": 30,
+                                            #               "Minimum": 20,
+                                            #               "Maximum": 40},
+                                            #
+                                            #  "M_Weapon": {"Expectation": 50,
+                                            #               "Minimum": 45,
+                                            #               "Maximum": 60},
+                                            #
+                                            #  "L_Weapon": {"Expectation": 200,
+                                            #               "Minimum": 185,
+                                            #               "Maximum": 210},
+                                            #
+                                            #  "S_Armor": {"Expectation": 30,
+                                            #              "Minimum": 20,
+                                            #              "Maximum": 40},
+                                            #
+                                            #  "M_Armor": {"Expectation": 50,
+                                            #              "Minimum": 45,
+                                            #              "Maximum": 60},
+                                            #
+                                            #  "L_Armor": {"Expectation": 200,
+                                            #              "Minimum": 185,
+                                            #              "Maximum": 210},
 
                                              "S_Tool": {"Expectation": 30,
                                                         "Minimum": 20,
                                                         "Maximum": 40},
 
-                                             "M_Tool": {"Expectation": 50,
-                                                        "Minimum": 45,
-                                                        "Maximum": 60},
-
-                                             "L_Tool": {"Expectation": 200,
-                                                        "Minimum": 185,
-                                                        "Maximum": 210}
+                                             # "M_Tool": {"Expectation": 50,
+                                             #            "Minimum": 45,
+                                             #            "Maximum": 60},
+                                             #
+                                             # "L_Tool": {"Expectation": 200,
+                                             #            "Minimum": 185,
+                                             #            "Maximum": 210}
                                              }
                                    }
+
+        self.increase_expectation = self.__monkey_patch_pass
+        self.decrease_expectation = self.__monkey_patch_pass
+
+    @staticmethod
+    def __monkey_patch_pass(expectation_dict, *args, **kwargs):
+        return expectation_dict
 
     def gen_agent_interests_dict(self):
         return self.ref_interests_dict

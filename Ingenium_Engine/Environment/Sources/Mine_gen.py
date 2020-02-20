@@ -10,6 +10,7 @@ import random
 # Libs
 
 # Own modules
+from Ingenium_Engine.Environment.Prints.Mine_prints import Mine_prints
 from Ingenium_Engine.Environment.Sources.Source_gen import Source
 from Ingenium_Engine.Tools.Inventory_tools import Inventory_tools
 from Ingenium_Engine.Tools.Characteristics_tools import Characteristics_tools
@@ -34,7 +35,10 @@ class gen_mine(Source):
         self.gen_dicts(inventory, characteristics)
 
         # --> Initialising records
-        self.transaction_records = []
+        # self.transaction_records = []
+
+        # --> Initialise prints
+        self.prints = Mine_prints()
 
     def mine(self, agent, resource):
         mined_quantity = 5
@@ -52,27 +56,38 @@ class gen_mine(Source):
                 # --> Remove resource from mine inventory
                 self.inventory["Resources"][resource] -= mined_quantity
 
-                print("Mined " + str(mined_quantity) + " " + resource + " successfully")
-
                 # --> Adjust gathered quantity to available cargo space
                 gathered_quantity = Inventory_tools().get_gathered_quantity(agent, mined_quantity)
+
+                self.prints.mining_recap(resource, mined_quantity)
+                self.prints.gathered_resource_recap(resource, gathered_quantity)
 
                 # --> Add resource to agent inventory
                 if resource in list(agent.inventory["Resources"].keys()):
                     agent.inventory["Resources"][resource] += gathered_quantity
-                    return
 
                 else:
                     agent.inventory["Resources"][resource] = gathered_quantity
-                    return
+
+                # ----- Rate action
+                if gathered_quantity == 0:
+                    agent.action_success_history.append(-1)     # Error
+                else:
+                    agent.action_success_history.append(1)      # Success
+                return
 
             else:
-                print("Tool level " + str(agent.characteristics["Tool"]) + " insufficent to mine " + str(resource) + " (req: " +
-                      str(self.characteristics["RMD"][resource]) + ")")
+                self.prints.failed_mining_recap(agent.characteristics["Tool"], resource, self.characteristics["RMD"][resource])
+
+                # ----- Rate action
+                agent.action_success_history.append(-1)     # Error
                 return
 
         else:
-            print("Mine is empty")
+            self.prints.mine_empty()
+
+            # ----- Rate action
+            agent.action_success_history.append(0)      # Neutral
             return
 
     def add_to_inventory(self, resource, resource_quantity):
@@ -99,7 +114,7 @@ class gen_mine(Source):
             self.characteristics = Characteristics_tools().gen_mine_characteristics_dict(self.inventory)
 
         else:
-            print("Resource not in inventory")
+            self.prints.print_1()
             return
 
     def gen_dicts(self,

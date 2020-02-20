@@ -47,8 +47,6 @@ class Visualizer_tools:
         POIs_visu_dict = {}
 
         for POI in environment.POI_dict.keys():
-            print(environment.POI_dict[POI].ef_dict)
-
             POIs_visu_dict[POI] = {}
 
             # --> Create POI sprite
@@ -70,8 +68,8 @@ class Visualizer_tools:
             POIs_visu_dict[POI]["Labels"]["Name"]["Label"] = name_font.render(POI, False, (0, 0, 0))
             POIs_visu_dict[POI]["Labels"]["Name"]["Pos"] = (POIs_visu_dict[POI]["Sprite"].rect[0] + h_offset,
                                                             POIs_visu_dict[POI]["Sprite"].rect[1] + v_offset)
+            h_offset += 15
             v_offset += 25
-            h_offset += 20
 
             # Add converters labels
             converter_font = pg.font.SysFont("comicsansms", 12)
@@ -81,9 +79,10 @@ class Visualizer_tools:
                 POIs_visu_dict[POI]["Labels"][converter]["Label"] = converter_font.render(converter, False, (0, 0, 0))
                 POIs_visu_dict[POI]["Labels"][converter]["Pos"] = (POIs_visu_dict[POI]["Sprite"].rect[0] + h_offset,
                                                                    POIs_visu_dict[POI]["Sprite"].rect[1] + v_offset)
-                v_offset += 10
+                v_offset += 12
 
             # Add sources labels
+            v_offset += 2
             source_font = pg.font.SysFont("comicsansms", 12)
 
             for source in environment.POI_dict[POI].ef_dict["Sources"].keys():
@@ -91,7 +90,7 @@ class Visualizer_tools:
                 POIs_visu_dict[POI]["Labels"][source]["Label"] = source_font.render(source, False, (0, 0, 0))
                 POIs_visu_dict[POI]["Labels"][source]["Pos"] = (POIs_visu_dict[POI]["Sprite"].rect[0] + h_offset,
                                                                 POIs_visu_dict[POI]["Sprite"].rect[1] + v_offset)
-                v_offset += 10
+                v_offset += 12
 
             # --> Create dynamic labels
             POIs_visu_dict[POI]["Dynamic_Labels"] = {}

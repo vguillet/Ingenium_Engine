@@ -46,13 +46,13 @@ class Market_prints:
 
     @staticmethod
     def transaction_recap(name, transaction_type, item_type, item,
-                          quantity_available, quantity_requested,
+                          quantity_requested,
                           agent_expectation, market_expectation):
         print("Transaction request recap:")
         print("Agent trading:", name)
         print("Transaction type:", transaction_type)
         print("Requested item:", item_type, item)
-        print("(Quantity available) " + quantity_available + " - " + quantity_requested + " (Quantity requested)")
+        print("Quantity requested: " + quantity_requested)
         print("(Agent price) " + agent_expectation + " - " + market_expectation + " (Market price)\n")
 
     @staticmethod
@@ -61,7 +61,7 @@ class Market_prints:
 
     @staticmethod
     def successful_sell_transaction_recap(item_quantity, item_type, item, price_per_item):
-        print("Transaction succesful, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " sold at " + str(price_per_item) + "$ per unit")
+        print("Transaction successful, " + str(item_quantity) + " units of " + str(item) + " " + str(item_type) + " sold at " + str(price_per_item) + "$ per unit")
 
     @staticmethod
     def print_1():

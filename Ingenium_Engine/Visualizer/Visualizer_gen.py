@@ -11,10 +11,8 @@ import time
 import pygame as pg
 
 # Own modules
+from Settings.SETTINGS import SETTINGS
 from Ingenium_Engine.Visualizer.Visualizer_tools import Visualizer_tools
-from Ingenium_Engine.Visualizer.Agent_visu_gen import gen_agent_visu
-from Ingenium_Engine.Visualizer.POI_visu_gen import gen_POI_visu
-from Ingenium_Engine.Visualizer.Dynamic_label_gen import gen_dynamic_label
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -24,7 +22,11 @@ __date__ = '31/01/2020'
 
 
 class gen_visualizer:
-    def __init__(self, run_name: str, environment: "Environment object", agents_dict: dict):
+    def __init__(self, run_name: str, environment: "Environment object", agents_dict: dict, press_start=True):
+        # ======================== START VISUALISER ANIMATION ===========================
+        if press_start:
+            input("\n\n -- Press enter to start visualiser animation -- \n")
+
         # ======================== INITIALISATION =======================================
         # ----- Initialise packages and tools
         pg.init()
@@ -35,7 +37,7 @@ class gen_visualizer:
         
         # --> Setup visualiser settings
         fps = 30
-        margin = 100
+        margin = 50
 
         # --> Setup visualizer window
         screen_size = (environment.size[0] + 2*margin, environment.size[-1] + 2*margin)
@@ -49,6 +51,7 @@ class gen_visualizer:
         all_sprites_group = pg.sprite.Group()
         POI_sprite_group = pg.sprite.Group()
         agent_sprite_group = pg.sprite.Group()
+
 
         # ----- Create POIs
         POIs_visu_dict = visualiser_tools.gen_POI_visu_dict(environment, margin)
@@ -72,10 +75,16 @@ class gen_visualizer:
         while running:
             # --> Keep loop running at the right speed (to match requested fps count)
             # clock.tick(fps)
-            time.sleep(0.5)
+            time.sleep(0.1)
 
             # --> Set step
             step += 1
+            settings = SETTINGS()
+            settings.agent_settings.gen_agent_settings()
+            max_step = settings.agent_settings.max_age
+
+            if step > max_step:
+                step = max_step
 
             # ----- Process input (events)
             for event in pg.event.get():
@@ -100,6 +109,11 @@ class gen_visualizer:
 
             # --> Add agents label to image
             visualiser_tools.blit_all_labels(agents_visu_dict, screen)
+
+            # --> Add step label
+            step_font = pg.font.SysFont("comicsansms", 25)
+            step_label = step_font.render("Step: " + str(step), False, (0, 0, 0))
+            screen.blit(step_label, (20, 20))
 
             # --> Flip display *after* drawing everything
             pg.display.flip()

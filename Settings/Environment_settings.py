@@ -20,7 +20,7 @@ __date__ = '7/02/2020'
 class Environment_settings:
     def gen_environment_settings(self):
         # --> Environment properties
-        self.nb_POI = 3
+        self.nb_POI = 2
 
-        self.nb_mines = 2
+        self.nb_mines = 1
         self.nb_markets = 1

@@ -38,7 +38,7 @@ class Agent:
         # ----- Setup reference properties
         self.name = name
         self.pos = pos
-        self.velocity = 10
+        self.velocity = self.settings.agent_settings.agent_speed
 
         self.starting_pos = pos
         self.starting_traits = traits
@@ -54,12 +54,20 @@ class Agent:
 
         # --> Setup trackers
         # Step trackers
-        self.profit = []
         self.pos_history = []
+
+        self.inventory_history = []
+        self.interests_history = []
+        self.characteristics_history = []
+
+        self.cargo_history = []
+
+        self.reward_history = []
         self.action_history = []
+        self.action_success_history = []
 
         # Episode trackers
-        self.profit_history = []
+        self.reward_timeline = []
 
     @property
     def used_cargo(self):
@@ -102,9 +110,17 @@ class Agent:
         self.pos = self.starting_pos
 
         # --> Reset step trackers
-        self.profit = []
         self.pos_history = []
+
+        self.inventory_history = []
+        self.interests_history = []
+        self.characteristics_history = []
+
+        self.cargo_history = []
+
+        self.reward_history = []
         self.action_history = []
+        self.action_success_history = []
 
         # --> Reset dictionaries
         self.gen_dicts(self.starting_traits,

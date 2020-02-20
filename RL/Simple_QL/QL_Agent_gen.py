@@ -5,12 +5,14 @@
 """
 
 # Built-in/Generic Imports
+import copy
 
 # Libs
 import numpy as np
 
 # Own modules
 from Ingenium_Engine.Agents.Agent import Agent
+from RL.Simple_QL.Reward_function_gen import gen_reward_function
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -27,7 +29,8 @@ class gen_Agent(Agent):
                  traits: dict = None,
                  inventory: dict = None,
                  interests: dict = None,
-                 characteristics: dict = None):
+                 characteristics: dict = None,
+                 reward_dict: dict = None):
         super().__init__(name, pos, traits, inventory, interests, characteristics)
 
         # --> Setup rl settings
@@ -35,6 +38,9 @@ class gen_Agent(Agent):
 
         # --> Setup Q-table
         self.gen_q_table(environment, self.settings.rl_behavior_settings.nb_bucket)
+
+        # --> Setup reward dict
+        self.reward_function = gen_reward_function(reward_dict)
 
     def step(self, date, environment: "Environment Object", action: int):
         """
@@ -49,52 +55,57 @@ class gen_Agent(Agent):
         :return: new_state, reward, done
         """
         prev_money = self.inventory["Money"]
+        default_reward = -1
 
         # --> Convert action int to matching action str
         action = self.action_lst[action]
+        action_type = action.split()[0]
 
         # --> Perform action
-        if action.split()[0] == "Move":
+        if action_type == "Move":
             # --> Get target POI
             poi = action.split()[-1]
 
             # --> Get target POI position
             poi_pos = environment.POI_dict[poi].pos
-            if poi_pos == self.pos:
+
+            # --> Compute movement
+            poi_vector = (self.pos[0] - poi_pos[0], self.pos[1] - poi_pos[1])
+            poi_vector_mag = ((poi_vector[0]) ** 2 + (poi_vector[1]) ** 2) ** (1 / 2)
+            normalised_poi_vector = (poi_vector[0]/poi_vector_mag, poi_vector[1]/poi_vector_mag)
+
+            movement = (normalised_poi_vector[0]*self.velocity, normalised_poi_vector[1]*self.velocity)
+            movement_mag = ((movement[0]) ** 2 + (movement[1]) ** 2) ** (1 / 2)
+
+            # --> Adjust movement if overshooting goal
+            if poi_vector_mag < movement_mag:
+                movement = poi_vector
+            else:
                 pass
 
-            else:
-                # --> Compute movement
-                poi_vector = (self.pos[0] - poi_pos[0], self.pos[1] - poi_pos[1])
-                poi_vector_mag = ((poi_vector[0]) ** 2 + (poi_vector[1]) ** 2) ** (1 / 2)
-                normalised_poi_vector = (poi_vector[0]/poi_vector_mag, poi_vector[1]/poi_vector_mag)
+            new_x = self.pos[0] - int(movement[0])
+            new_y = self.pos[1] - int(movement[1])
 
-                movement = (normalised_poi_vector[0]*self.velocity, normalised_poi_vector[1]*self.velocity)
-                movement_mag = ((movement[0]) ** 2 + (movement[1]) ** 2) ** (1 / 2)
+            if new_x < 0:
+                new_x = 0
+            elif new_x >= 800:
+                new_x = 800
 
-                # --> Adjust movement if overshooting goal
-                if poi_vector_mag < movement_mag:
-                    movement = poi_vector
-                else:
-                    pass
+            if new_y < 0:
+                new_y = 0
+            elif new_y >= 800:
+                new_y = 800
 
-                new_x = self.pos[0] - int(movement[0])
-                new_y = self.pos[1] - int(movement[1])
+            # --> Update position
+            self.pos = (new_x, new_y)
 
-                if new_x < 0:
-                    new_x = 0
-                elif new_x >= 800:
-                    new_x = 800
+            # ----- Rate action
+            self.action_success_history.append(1)
 
-                if new_y < 0:
-                    new_y = 0
-                elif new_y >= 800:
-                    new_y = 800
+            # ----- Get Reward
+            self.reward_history.append(self.reward_function.get_reward(action_type, self.action_success_history[-1]))
 
-                # --> Update position
-                self.pos = (new_x, new_y)
-
-        elif action.split()[0] == "Mine":
+        elif action_type == "Mine":
             # --> Get target mine
             mine = environment.sources_dict[action.split()[-1]]
 
@@ -104,22 +115,34 @@ class gen_Agent(Agent):
             # --> Perform mining action
             mine.mine(self, mined_resource)
 
-        elif action.split()[0] == "buy" or action.split()[0] == "sell":
+            # ----- Get Reward
+            self.reward_history.append(self.reward_function.get_reward(action_type, self.action_success_history[-1]))
+
+        elif action_type == "buy" or action_type == "sell":
             # --> Get target market
             market = environment.converters_dict[action.split()[-1]]
-
-            # --> Get target transaction
-            transaction = action.split()[0]
 
             # --> Get target item_type/item
             item_type = action.split()[1]
             item = action.split()[2]
 
             # --> Perform trade
-            market.evaluate_transaction(date, self, transaction, item_type, item, 1)      # TODO: Auto pick quantity
+            # print(self.inventory["Resources"]["Iron"])
+            market.evaluate_transaction(date, self, action_type, item_type, item, 1)      # TODO: Auto pick quantity
+            # print(self.inventory["Resources"]["Iron"])
 
-        elif action == "Do nothing":
-            pass
+            # ----- Get Reward
+            self.reward_history.append(self.reward_function.get_reward(action_type, self.action_success_history[-1]))
+
+            if action_type == "sell" and action.split()[1] == "Resources":
+                # Reward
+                if self.action_success_history[-1] == 1:
+                    self.reward_history.append((self.inventory["Money"] - prev_money))
+                else:
+                    self.reward_history.append(self.reward_function.get_reward(action_type, self.action_success_history[-1]))
+
+            else:
+                self.reward_history.append(self.reward_function.get_reward(action_type, self.action_success_history[-1]))
 
         # --> Record step
         if self.characteristics["Age"] >= self.settings.agent_settings.max_age \
@@ -128,29 +151,24 @@ class gen_Agent(Agent):
         else:
             done = False
 
-        # Step reward
-        net = (self.inventory["Money"] - prev_money)/self.characteristics["Age"]
-
-        if net > 0:
-            self.profit.append(net)
-        else:
-            self.profit.append(0)
-
-        # Step position
         self.pos_history.append(self.pos)
-
-        # Step action
         self.action_history.append(action)
+
+        self.inventory_history.append(copy.deepcopy(self.inventory))
+        self.interests_history.append(copy.deepcopy(self.interests))
+        self.characteristics_history.append(copy.deepcopy(self.characteristics))
+
+        self.cargo_history.append(self.used_cargo)
 
         # --> Increase agent age
         self.characteristics["Age"] += 1
 
         # --> Return step results
         new_state = self.get_observations(environment)
-        reward = self.profit[-1]
+        reward = self.reward_history[-1]
 
         if done:
-            self.profit_history.append(sum(self.profit))
+            self.reward_timeline.append(sum(self.reward_history))
 
         return new_state, reward, done
 
@@ -192,7 +210,11 @@ class gen_Agent(Agent):
         # --> Listing moving actions
         for POI in environment.POI_dict.keys():
             self.action_lst.append("Move to " + POI)
-            available_action_lst.append(1)
+
+            if environment.POI_dict[POI].pos == self.pos:
+                available_action_lst.append(0)
+            else:
+                available_action_lst.append(1)
 
         # --> Listing mining actions
         for source in environment.sources_dict.keys():
@@ -213,19 +235,18 @@ class gen_Agent(Agent):
                 if item_type == "Money":
                     pass
                 else:
-                    for item in environment.converters_dict[converter].inventory[item_type].keys():
+                    for item in environment.converters_dict[converter].interests[item_type].keys():
                         self.action_lst.append("buy " + item_type + " " + item + " in " + converter)
                         self.action_lst.append("sell " + item_type + " " + item + " in " + converter)
 
-                    # --> Evaluate action possibility
-                    if environment.converters_dict[converter].pos == self.pos:
-                        available_action_lst.append(1)
-                    else:
-                        available_action_lst.append(0)
+                        # --> Evaluate action possibility
+                        if environment.converters_dict[converter].pos == self.pos:
+                            available_action_lst.append(1)
+                            available_action_lst.append(1)
 
-        # --> Adding "Do nothing" action
-        self.action_lst.append("Do nothing")
-        available_action_lst.append(1)
+                        else:
+                            available_action_lst.append(0)
+                            available_action_lst.append(0)
 
         return self.action_lst, available_action_lst
 

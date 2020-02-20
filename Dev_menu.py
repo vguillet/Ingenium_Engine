@@ -36,8 +36,9 @@ environment = gen_environment("Ingenium_1",
 
 # --> Supplying mines
 resources_list = ["Iron", "Gold", "Diamond"]
-for i, mine in enumerate(environment.sources_dict.keys()):
-    environment.sources_dict[mine].add_to_inventory(resources_list[i], 100)
+for mine in environment.sources_dict.keys():
+    for resource in resources_list:
+        environment.sources_dict[mine].add_to_inventory(resource, 100)
 
 # --> Supplying market
 for i, market in enumerate(environment.converters_dict.keys()):

@@ -79,11 +79,11 @@ class QL_optimiser:
             else:
                 render = False
 
-            date = 0
+            step = 0
 
-            # --> Run training until goal is achieved by each bot
+            # ----- Run training until goal is achieved by each bot
             while len(agents_done) != len(self.agents):
-                date += 1
+                step += 1
 
                 # --> Cycle between agents working
                 for _ in range(len(agents_working)):
@@ -91,7 +91,7 @@ class QL_optimiser:
 
                     if agent not in agents_done:
                         # time.sleep(0.5)
-                        if date == 1:
+                        if step == 1:
                             # --> Gen initial state
                             state = self.agents[agent].get_observations(environment)
                             discrete_state = self.get_discrete_state(state,
@@ -99,13 +99,16 @@ class QL_optimiser:
                                                                      self.agents[agent].discrete_os_win_size)
 
                         else:
+                            action_lst, available_action_lst = self.agents[agent].get_action_lst(environment)
+
+                            # --> Get best action
                             if np.random.randint(0, 100) > self.settings.rl_behavior_settings.epsilon:
-                                action_lst, available_action_lst = self.agents[agent].get_action_lst(environment)
                                 action_value_lst = self.agents[agent].q_table[discrete_state].copy()
                                 action = np.argmax(action_value_lst)
 
                                 # --> Cycle through options until action picked is valid
                                 while bool(available_action_lst[action]) is False:
+
                                     action_value_lst[action] = -100000
                                     action = np.argmax(action_value_lst)
 
@@ -113,15 +116,21 @@ class QL_optimiser:
                             else:
                                 action = np.random.randint(0, self.agents[agent].nb_actions)
 
-                            new_state, reward, done = self.agents[agent].step(date, environment, action)
+                                # --> Cycle through options until action picked is valid
+                                while bool(available_action_lst[action]) is False:
+                                    action = np.random.randint(0, self.agents[agent].nb_actions)
 
+                            # --> Perform step
+                            new_state, reward, done = self.agents[agent].step(step, environment, action)
+
+                            # --> Discretise step
                             new_discrete_state = self.get_discrete_state(new_state,
                                                                          self.agents[agent].os_low,
                                                                          self.agents[agent].discrete_os_win_size)
 
                             if done:    # --> Stop agent if done
-                                # print("--------------------------------------------> Episode profit:", sum(self.agents[agent].profit))
-                                self.agents[agent].q_table[discrete_state + (action,)] = self.agents[agent].profit_history[-1]
+                                self.agents[agent].q_table[discrete_state + (action,)] = \
+                                    self.agents[agent].reward_history[-1] / self.agents[agent].characteristics["Age"]
 
                                 agents_done.append(agent)
                                 agents_working.remove(agent)
@@ -152,9 +161,29 @@ class QL_optimiser:
                 gen_visualizer("Episode " + str(episode), environment, self.agents)
 
                 for agent in self.agents.keys():
-                    plt.plot(self.agents[agent].profit_history)
+                    plt.plot(self.agents[agent].reward_timeline[-self.settings.rl_behavior_settings.show_every:])
+                    plt.show()
 
-                plt.show()
+                    iron_quantity = []
+                    gold_quantity = []
+                    diamond_quantity = []
+                    S_tool_quantity = []
+
+                    for step in range(len(self.agents[agent].inventory_history)):
+                        iron_quantity.append(self.agents[agent].inventory_history[step]["Resources"]["Iron"])
+                        gold_quantity.append(self.agents[agent].inventory_history[step]["Resources"]["Gold"])
+                        diamond_quantity.append(self.agents[agent].inventory_history[step]["Resources"]["Diamond"])
+                        S_tool_quantity.append(self.agents[agent].inventory_history[step]["Items"]["S_Tool"])
+
+                    plt.plot(self.agents[agent].cargo_history, label="Cargo")
+                    # plt.plot(iron_quantity, label="Iron")
+                    # plt.plot(gold_quantity, label="Gold")
+                    # plt.plot(diamond_quantity, label="Diamond")
+                    plt.plot(S_tool_quantity, label="S tool")
+
+                    plt.legend()
+                    plt.grid()
+                    plt.show()
 
         # ======================== RESULTS ==============================================
 

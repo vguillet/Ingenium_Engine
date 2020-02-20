@@ -159,7 +159,8 @@ class gen_environment:
 
             if i != nb_POI-1:
                 # --> Generate random ed count
-                mines = random.randint(0, mine_count)
+                # TODO: Fix mine count repartition
+                mines = random.randint(0, 2)
                 mine_count -= mines
 
                 markets = random.randint(0, market_count)
