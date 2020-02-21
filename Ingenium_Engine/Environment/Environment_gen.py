@@ -16,6 +16,8 @@ from faker import Faker
 
 # Own modules
 from Ingenium_Engine.Environment.POI_gen import gen_POI
+from Ingenium_Engine.Visualizer.Visualizer_gen import gen_visualizer
+
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -85,6 +87,10 @@ class gen_environment:
             low_lst.append(0)
         return low_lst
 
+    def visualise_environment(self):
+        gen_visualizer(self.name, self, press_start=False)
+        return
+
     def plot_environment_graph(self):
         pos = nx.get_node_attributes(self.graph, 'pos')
         nx.draw(self.graph, pos, with_labels=True)
@@ -146,16 +152,16 @@ class gen_environment:
 
         fake = Faker()
 
-        name_list = []
-        pos_list = []
+        name_lst = []
+        pos_lst = []
 
         # --> Adding POI to environment
         for i in range(nb_POI):
             # --> Generate POI name
             name = fake.first_name() + "_City"
-            while name in name_list:
+            while name in name_lst:
                 name = fake.first_name() + "_City"
-            name_list.append(name)
+            name_lst.append(name)
 
             if i != nb_POI-1:
                 # --> Generate random ed count
@@ -171,11 +177,30 @@ class gen_environment:
                 mines = mine_count
                 markets = market_count
 
-            # --> Generate city position
-            pos = (random.randint(0, environment_size[0]), random.randint(0, environment_size[-1]))
-            pos_list.append(pos)
+            # --> Generate POI position
+            min_distance = 100
+            valid_new_pos = False
 
-            self.add_POI(gen_POI(name, "City", pos,
+            while valid_new_pos is not True:
+                new_pos = (random.randint(0, environment_size[0]), random.randint(0, environment_size[-1]))
+
+                if len(pos_lst) > 1:
+                    # Checking if POI is at a reasonable distance from other POI
+                    distance_lst = []
+
+                    for pos in pos_lst:
+                        distance_lst.append(((new_pos[0] - pos[0]) ** 2 + (new_pos[1] - pos[1]) ** 2) ** (1 / 2))
+
+                    if min(distance_lst) > min_distance:
+                        valid_new_pos = True
+                    else:
+                        pass
+                else:
+                    valid_new_pos = True
+
+            pos_lst.append(new_pos)
+
+            self.add_POI(gen_POI(name, "City", new_pos,
                                  mine_count=mines,
                                  market_count=markets))
 

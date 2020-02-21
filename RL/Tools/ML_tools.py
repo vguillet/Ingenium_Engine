@@ -20,7 +20,10 @@ __date__ = '7/02/2020'
 
 class ML_tools:
     @staticmethod
-    def throttle(current_step, nb_steps, max_value, min_value=1., decay_function=0):
+    def throttle(current_step: int, nb_steps: int,
+                 setting_value, max_value, min_value,
+                 decay_function: int = 0,
+                 inverse: bool = False, start_from_setting_value: bool = True):
         """
         Throttle a value according to the instance in the run time.
 
@@ -33,45 +36,49 @@ class ML_tools:
 
         :param current_step: Current step
         :param nb_steps: Total number of step in the run
+        :param setting_value: Setting value
         :param max_value: Max allowed value
         :param min_value: Min allowed value
         :param decay_function: Decay function setting
+        :param inverse: Decrease throttled value instead of increasing it
+        :param start_from_setting_value: Set to decide whether to throttle from setting value
         :return: Throttled value
         """
         from math import log10
 
-        # -- Exit program if incorrect settings used
-        if decay_function > 2:
-            print("Invalid throttle decay function reference")
-            sys.exit()
+        if start_from_setting_value:
+            if not inverse:
+                min_value = setting_value
+            else:
+                max_value = setting_value
 
-        inverse = False
-        if max_value < min_value:
-            inverse = True
-
-        # TODO: add decay functions (log/exponential etc...)
         if current_step <= nb_steps:
             if decay_function == 0:  # Fixed value
-                return max_value
+                return setting_value
 
-            if decay_function == 1:  # Linear decay
-                if inverse:
-                    throttled_value = max_value + (min_value - max_value) / nb_steps * current_step
-                    if throttled_value >= min_value:
-                        throttled_value = min_value
+            elif decay_function == 1:  # Linear decay
+                if not inverse:
+                    throttled_value = setting_value + (max_value - min_value) / nb_steps * current_step
+                    if throttled_value >= max_value:
+                        throttled_value = max_value
                 else:
-                    throttled_value = max_value - (max_value - min_value) / nb_steps * current_step
+                    throttled_value = setting_value - (max_value - min_value) / nb_steps * current_step
                     if throttled_value <= min_value:
                         throttled_value = min_value
 
             # TODO: Complete log decay
             elif decay_function == 2:  # Logarithmic decay
-                throttled_value = max_value + log10(-(current_step - nb_steps))
+                throttled_value = setting_value + log10(-(current_step - nb_steps))
 
+            # TODO: add decay functions (log/exponential etc...)
             else:
-                throttled_value = max_value
+                # -- Exit program if incorrect settings used
+                raise Exception("Invalid throttle function setting")
 
         else:
-            throttled_value = min_value
+            if not inverse:
+                throttled_value = max_value
+            else:
+                throttled_value = min_value
 
         return throttled_value

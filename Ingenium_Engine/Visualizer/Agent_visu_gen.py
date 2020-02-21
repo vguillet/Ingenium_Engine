@@ -48,10 +48,10 @@ class gen_agent_visu(pg.sprite.Sprite):
             x, y = self.rect.center
 
             # --> Solve displacement
-            delta_x = self.agent.pos_history[self.step][0] - x
-            delta_y = self.agent.pos_history[self.step][1] - y
+            delta_x = self.agent.pos_history[self.step][0] - x - self.margin
+            delta_y = self.agent.pos_history[self.step][1] - y - self.margin
 
-            angle = (-math.atan2(delta_y, delta_x) * 180 / math.pi)
+            angle = (math.atan2(delta_y, delta_x) * 180 / math.pi)
 
             # --> Rotate image
             self.image = pg.transform.rotate(self.original_image, int(angle))

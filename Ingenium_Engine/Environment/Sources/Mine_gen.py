@@ -41,7 +41,7 @@ class gen_mine(Source):
         self.prints = Mine_prints()
 
     def mine(self, agent, resource):
-        mined_quantity = 5
+        mined_quantity = 1
 
         # --> Checking if mine is not empty
         if self.inventory["Resources"][resource] > 0:

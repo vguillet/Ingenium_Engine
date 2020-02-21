@@ -32,7 +32,8 @@ environment = gen_environment("Ingenium_1",
                               settings.environment_settings.nb_mines,
                               environment_size=(environment_size, environment_size))
 
-# environment.plot_environment_graph()
+environment.visualise_environment()
+environment.plot_environment_graph()
 
 # --> Supplying mines
 resources_list = ["Iron", "Gold", "Diamond"]
@@ -59,4 +60,4 @@ for i, market in enumerate(environment.converters_dict.keys()):
     # environment.converters_dict[market].add_to_inventory("Items", "L_Tool", 3, force_add=True)
 
 
-sim = QL_optimiser(environment)
+# sim = QL_optimiser(environment)

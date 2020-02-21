@@ -5,6 +5,7 @@
 """
 
 # Built-in/Generic Imports
+import random
 
 # Libs
 
@@ -105,9 +106,13 @@ class Agent:
         else:
             self.characteristics = Characteristics_tools().gen_agent_characteristics_dict()
 
-    def reset_agent(self):
+    def reset_agent(self, random_starting_pos=False):
         # --> Reset position
-        self.pos = self.starting_pos
+        if random_starting_pos:
+            self.pos = (random.randint(0, 800), random.randint(0, 800))
+
+        else:
+            self.pos = self.starting_pos
 
         # --> Reset step trackers
         self.pos_history = []

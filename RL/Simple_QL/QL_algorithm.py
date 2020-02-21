@@ -14,12 +14,15 @@ import time
 from faker import Faker
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # Own modules
-from Settings.SETTINGS import SETTINGS
 from Ingenium_Engine.Tools.Progress_bar_tool import Progress_bar
-from RL.Simple_QL.QL_Agent_gen import gen_Agent
 from Ingenium_Engine.Visualizer.Visualizer_gen import gen_visualizer
+
+from Settings.SETTINGS import SETTINGS
+from RL.Simple_QL.QL_Agent_gen import gen_Agent
+from RL.Tools.ML_tools import ML_tools
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -44,6 +47,7 @@ class QL_optimiser:
 
         # ----- Initialise tools
         fake = Faker()
+        ml_tools = ML_tools()
 
         # --> Seeding generators
         # random.seed(345)
@@ -60,6 +64,12 @@ class QL_optimiser:
         # ----- Initialise trackers
         progress_bar = Progress_bar(max_step=self.settings.rl_behavior_settings.episodes, label="Episode")
 
+        run_df = pd.DataFrame(index=range(self.settings.rl_behavior_settings.episodes),
+                              columns=["Accumulated reward", "Learning_rate", "Discount", "Epsilon"])
+
+        for agent in self.agents.keys():
+            run_df[agent + " reward"] = 0
+
         # ======================== PROCESS ==============================================
         for episode in range(self.settings.rl_behavior_settings.episodes):
             # --> Setup episode variables
@@ -71,7 +81,7 @@ class QL_optimiser:
             # --> Reset agents and add to working agent list
             for agent in self.agents.keys():
                 agents_working.append(agent)
-                self.agents[agent].reset_agent()
+                self.agents[agent].reset_agent(random_starting_pos=self.settings.rl_behavior_settings.random_starting_pos)
 
             # --> Render if episode matches show every
             if episode % self.settings.rl_behavior_settings.show_every == 0:
@@ -79,6 +89,32 @@ class QL_optimiser:
             else:
                 render = False
 
+            # --> Setup episode parameters
+            # Throttle (decrease) learning rate according to episode
+            episode_learning_rate = ml_tools.throttle(episode, self.settings.rl_behavior_settings.episodes,
+                                                      self.settings.rl_behavior_settings.learning_rate, 0.99, 0.1,
+                                                      self.settings.rl_behavior_settings.learning_rate_decay,
+                                                      inverse=True, start_from_setting_value=True)
+
+            run_df["Learning_rate"][episode] = episode_learning_rate
+
+            # Throttle (increase) discount according to episode
+            episode_discount = ml_tools.throttle(episode, self.settings.rl_behavior_settings.episodes,
+                                                 self.settings.rl_behavior_settings.discount, 0.99, 0.1,
+                                                 self.settings.rl_behavior_settings.discount_decay,
+                                                 inverse=False, start_from_setting_value=True)
+
+            run_df["Discount"][episode] = episode_discount
+
+            # Throttle (decrease) epsilon according to episode
+            episode_epsilon = ml_tools.throttle(episode, self.settings.rl_behavior_settings.episodes,
+                                                self.settings.rl_behavior_settings.epsilon, 100, 0,
+                                                self.settings.rl_behavior_settings.epsilon_decay,
+                                                inverse=True, start_from_setting_value=True)
+
+            run_df["Epsilon"][episode] = episode_epsilon
+
+            # Initiate steps
             step = 0
 
             # ----- Run training until goal is achieved by each bot
@@ -102,7 +138,7 @@ class QL_optimiser:
                             action_lst, available_action_lst = self.agents[agent].get_action_lst(environment)
 
                             # --> Get best action
-                            if np.random.randint(0, 100) > self.settings.rl_behavior_settings.epsilon:
+                            if np.random.randint(0, 100) > episode_epsilon:
                                 action_value_lst = self.agents[agent].q_table[discrete_state].copy()
                                 action = np.argmax(action_value_lst)
 
@@ -123,14 +159,16 @@ class QL_optimiser:
                             # --> Perform step
                             new_state, reward, done = self.agents[agent].step(step, environment, action)
 
-                            # --> Discretise step
+                            # --> Get discrete step
                             new_discrete_state = self.get_discrete_state(new_state,
                                                                          self.agents[agent].os_low,
                                                                          self.agents[agent].discrete_os_win_size)
 
                             if done:    # --> Stop agent if done
-                                self.agents[agent].q_table[discrete_state + (action,)] = \
-                                    self.agents[agent].reward_history[-1] / self.agents[agent].characteristics["Age"]
+                                self.agents[agent].q_table[discrete_state + (action,)] = self.agents[agent].reward_history[-1]
+
+                                # --> Record reward to summary
+                                run_df[agent + " reward"] = self.agents[agent].reward_timeline[-1]
 
                                 agents_done.append(agent)
                                 agents_working.remove(agent)
@@ -144,9 +182,9 @@ class QL_optimiser:
                                 current_q = self.agents[agent].q_table[discrete_state + (action,)]
 
                                 # --> Compute new Q value for current state and action
-                                new_q = (1 - self.settings.rl_behavior_settings.learning_rate) * current_q \
-                                        + self.settings.rl_behavior_settings.learning_rate * \
-                                        (reward + self.settings.rl_behavior_settings.discount * max_future_q)
+                                new_q = (1 - episode_learning_rate) * current_q \
+                                        + episode_learning_rate * \
+                                        (reward + episode_discount * max_future_q)
 
                                 # Update Q table with new Q value
                                 self.agents[agent].q_table[discrete_state + (action,)] = new_q
@@ -161,7 +199,9 @@ class QL_optimiser:
                 gen_visualizer("Episode " + str(episode), environment, self.agents)
 
                 for agent in self.agents.keys():
-                    plt.plot(self.agents[agent].reward_timeline[-self.settings.rl_behavior_settings.show_every:])
+                    # plt.plot(self.agents[agent].reward_timeline[-self.settings.rl_behavior_settings.show_every:])
+                    plt.plot(self.agents[agent].reward_timeline)
+
                     plt.show()
 
                     iron_quantity = []
@@ -176,9 +216,9 @@ class QL_optimiser:
                         S_tool_quantity.append(self.agents[agent].inventory_history[step]["Items"]["S_Tool"])
 
                     plt.plot(self.agents[agent].cargo_history, label="Cargo")
-                    # plt.plot(iron_quantity, label="Iron")
-                    # plt.plot(gold_quantity, label="Gold")
-                    # plt.plot(diamond_quantity, label="Diamond")
+                    plt.plot(iron_quantity, label="Iron")
+                    plt.plot(gold_quantity, label="Gold")
+                    plt.plot(diamond_quantity, label="Diamond")
                     plt.plot(S_tool_quantity, label="S tool")
 
                     plt.legend()

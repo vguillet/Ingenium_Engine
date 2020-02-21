@@ -138,6 +138,8 @@ class gen_Agent(Agent):
                 # Reward
                 if self.action_success_history[-1] == 1:
                     self.reward_history.append((self.inventory["Money"] - prev_money))
+
+                    # self.reward_history.append((self.inventory["Money"] - prev_money) / self.characteristics["Age"])
                 else:
                     self.reward_history.append(self.reward_function.get_reward(action_type, self.action_success_history[-1]))
 
@@ -171,36 +173,6 @@ class gen_Agent(Agent):
             self.reward_timeline.append(sum(self.reward_history))
 
         return new_state, reward, done
-
-    def get_observations(self, environment):
-        # ----- Setup State: [x, y, distance_from_other_POI, Tool, used_cargo, Inventory (resources), Money]
-        state = list()
-
-        # --> Add position
-        state.append(self.pos[0])       # x pos
-        state.append(self.pos[-1])      # y pos
-
-        # # --> Add distance from other POIs
-        # for POI in environment.POI_dict.keys():
-        #     poi_pos = environment.POI_dict[POI].pos
-        #     state.append(((self.pos[0] - poi_pos[0]) ** 2 + (self.pos[1] - poi_pos[1]) ** 2) ** (1 / 2))
-
-        # --> Add characteristics high/low
-        # Tool
-        state.append(self.characteristics["Tool"])
-
-        # --> Add used cargo
-        state.append(self.used_cargo)
-
-        # --> Add inventory
-        # Resources
-        for resource in self.inventory["Resources"].keys():
-            state.append(self.inventory["Resources"][resource])
-
-        # Money
-        state.append(self.inventory["Money"])
-
-        return state
 
     def get_action_lst(self, environment: "Environment Object"):
         # ----- List actions
@@ -236,19 +208,55 @@ class gen_Agent(Agent):
                     pass
                 else:
                     for item in environment.converters_dict[converter].interests[item_type].keys():
-                        self.action_lst.append("buy " + item_type + " " + item + " in " + converter)
                         self.action_lst.append("sell " + item_type + " " + item + " in " + converter)
+
+                        if item_type != "Resources":
+                            self.action_lst.append("buy " + item_type + " " + item + " in " + converter)
 
                         # --> Evaluate action possibility
                         if environment.converters_dict[converter].pos == self.pos:
                             available_action_lst.append(1)
-                            available_action_lst.append(1)
+
+                            if item_type != "Resources":
+                                available_action_lst.append(1)
 
                         else:
                             available_action_lst.append(0)
-                            available_action_lst.append(0)
+
+                            if item_type != "Resources":
+                                available_action_lst.append(0)
 
         return self.action_lst, available_action_lst
+
+    def get_observations(self, environment):
+        # ----- Setup State: [x, y, distance_from_other_POI, Tool, used_cargo, Inventory (resources), Money]
+        state = list()
+
+        # --> Add position
+        state.append(self.pos[0])       # x pos
+        state.append(self.pos[-1])      # y pos
+
+        # # --> Add distance from other POIs
+        # for POI in environment.POI_dict.keys():
+        #     poi_pos = environment.POI_dict[POI].pos
+        #     state.append(((self.pos[0] - poi_pos[0]) ** 2 + (self.pos[1] - poi_pos[1]) ** 2) ** (1 / 2))
+
+        # --> Add characteristics high/low
+        # Tool
+        state.append(self.characteristics["Tool"])
+
+        # --> Add used cargo
+        state.append(self.used_cargo)
+
+        # --> Add inventory
+        # Resources
+        for resource in self.inventory["Resources"].keys():
+            state.append(self.inventory["Resources"][resource])
+
+        # Money
+        state.append(self.inventory["Money"])
+
+        return state
 
     def gen_q_table(self, environment: "Environment Object", nb_buckets=20):
         # ----- Build os high/low lists

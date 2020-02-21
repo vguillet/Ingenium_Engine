@@ -22,7 +22,7 @@ __date__ = '31/01/2020'
 
 
 class gen_visualizer:
-    def __init__(self, run_name: str, environment: "Environment object", agents_dict: dict, press_start=True):
+    def __init__(self, run_name: str, environment: "Environment object", agents_dict: dict = {}, press_start=True):
         # ======================== START VISUALISER ANIMATION ===========================
         if press_start:
             input("\n\n -- Press enter to start visualiser animation -- \n")
@@ -52,7 +52,6 @@ class gen_visualizer:
         POI_sprite_group = pg.sprite.Group()
         agent_sprite_group = pg.sprite.Group()
 
-
         # ----- Create POIs
         POIs_visu_dict = visualiser_tools.gen_POI_visu_dict(environment, margin)
 
@@ -75,7 +74,7 @@ class gen_visualizer:
         while running:
             # --> Keep loop running at the right speed (to match requested fps count)
             # clock.tick(fps)
-            time.sleep(0.1)
+            time.sleep(0.2)
 
             # --> Set step
             step += 1
